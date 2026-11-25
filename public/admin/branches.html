@@ -122,8 +122,35 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="s-branch-id">
+        <div class="detail-section" style="background:rgba(20,99,197,0.05);border:1px solid rgba(20,99,197,0.14);border-radius:var(--radius-md);padding:14px;margin-bottom:16px">
+          <div class="detail-section-title" style="margin-bottom:8px">Quick Generate Standard Slots (07:00 AM – 06:00 PM)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+            <div class="form-group" style="margin:0;flex:1;min-width:130px">
+              <label class="form-label" for="bulk-days">Days Ahead</label>
+              <select id="bulk-days" class="form-input">
+                <option value="7">Next 7 Days</option>
+                <option value="14">Next 14 Days</option>
+                <option value="30">Next 30 Days</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;flex:1;min-width:140px">
+              <label class="form-label" for="bulk-type">Appointment Type</label>
+              <select id="bulk-type" class="form-input">
+                <option value="both">Both (Branch + Home)</option>
+                <option value="branch_visit">Branch Visit Only</option>
+                <option value="home_collection">Home Collection Only</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;width:110px">
+              <label class="form-label" for="bulk-cap">Capacity</label>
+              <input type="number" id="bulk-cap" class="form-input" min="1" value="5">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="bulk-gen-btn" style="min-height:44px">Generate Slots</button>
+          </div>
+        </div>
+
         <form id="slot-form" class="detail-section">
-          <div class="detail-section-title">Create New Slot</div>
+          <div class="detail-section-title">Create Single Slot</div>
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label" for="s-date">Date *</label>
@@ -313,16 +340,47 @@
             return;
           }
           box.innerHTML = slots.map(s => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid rgba(20,99,197,0.08)">
               <div>
                 <strong>${UI.escapeHtml(s.start_time)} – ${UI.escapeHtml(s.end_time)}</strong>
                 <span class="badge badge-blue" style="margin-left:6px">${UI.escapeHtml((s.slot_type || 'branch_visit').replace(/_/g, ' '))}</span>
               </div>
-              <span style="font-size:var(--fs-xs);color:var(--dark-text)">
-                Booked: <strong>${s.booked_count || 0} / ${s.max_capacity || 0}</strong>
-              </span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:var(--fs-xs);color:var(--dark-text)">
+                  Booked: <strong>${s.booked_count || 0} / ${s.max_capacity || 0}</strong>
+                </span>
+                <button type="button" class="btn btn-secondary btn-sm edit-slot-cap-btn" data-id="${s.id}" data-cap="${s.max_capacity || 5}" style="min-height:30px;padding:2px 8px">Cap</button>
+                <button type="button" class="btn btn-danger btn-sm del-slot-btn" data-id="${s.id}" style="min-height:30px;padding:2px 8px">Delete</button>
+              </div>
             </div>
           `).join('');
+
+          box.querySelectorAll('.edit-slot-cap-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const newCap = prompt('Enter new max capacity for this slot:', btn.dataset.cap);
+              if (!newCap) return;
+              try {
+                await API.patch(`/admin/slots/${btn.dataset.id}`, { max_capacity: Number(newCap) });
+                UI.toast('Slot capacity updated', 'success');
+                await loadSlotsForDate();
+              } catch (err) {
+                UI.toast(err.message || 'Failed to update slot', 'error');
+              }
+            });
+          });
+          box.querySelectorAll('.del-slot-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              UI.confirm('Delete this slot?', async () => {
+                try {
+                  await API.del(`/admin/slots/${btn.dataset.id}`);
+                  UI.toast('Slot removed', 'success');
+                  await loadSlotsForDate();
+                } catch (err) {
+                  UI.toast(err.message || 'Failed to delete slot', 'error');
+                }
+              }, 'Delete Slot');
+            });
+          });
         } catch (err) {
           box.innerHTML = `<p style="color:var(--danger)">${UI.escapeHtml(err.message || 'Failed to load slots')}</p>`;
         }
@@ -415,6 +473,43 @@
             await loadBranches();
           } catch (err) {
             UI.toast(err.message || 'Failed to update branch', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        document.getElementById('bulk-gen-btn').addEventListener('click', async () => {
+          const branchId = document.getElementById('s-branch-id').value;
+          const days = Number(document.getElementById('bulk-days').value || 7);
+          const typeChoice = document.getElementById('bulk-type').value;
+          const cap = Math.max(1, Number(document.getElementById('bulk-cap').value || 5));
+          const btn = document.getElementById('bulk-gen-btn');
+
+          const types = typeChoice === 'both' ? ['branch_visit', 'home_collection'] : [typeChoice];
+          const windows = [
+            ['07:00', '08:00'], ['08:00', '09:00'], ['09:00', '10:00'],
+            ['10:00', '11:00'], ['11:00', '12:00'], ['16:00', '17:00'], ['17:00', '18:00']
+          ];
+          const slots = [];
+          const base = new Date();
+          for (let d = 0; d < days; d++) {
+            const dt = new Date(base);
+            dt.setDate(base.getDate() + d);
+            const dateStr = dt.toISOString().slice(0, 10);
+            for (const t of types) {
+              for (const [st, en] of windows) {
+                slots.push({ slot_date: dateStr, slot_type: t, start_time: st, end_time: en, max_capacity: cap });
+              }
+            }
+          }
+
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.post(`/admin/branches/${branchId}/slots`, { slots });
+            UI.toast(`Generated ${slots.length} slots for the next ${days} days!`, 'success');
+            await loadSlotsForDate();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to generate slots', 'error');
           } finally {
             UI.setButtonLoading(btn, false);
           }

@@ -30,7 +30,7 @@ const AdminCommon = (() => {
         { id: 'tests', label: 'Tests', href: '/admin/tests.html', icon: 'flask' },
         { id: 'packages', label: 'Packages', href: '/admin/packages.html', icon: 'package' },
         { id: 'offers', label: 'Offers', href: '/admin/offers.html', icon: 'tag' },
-        { id: 'branches', label: 'Branches', href: '/admin/branches.html', icon: 'building' },
+        { id: 'branches', label: 'Branches & Slots', href: '/admin/branches.html', icon: 'building' },
       ],
     },
     {

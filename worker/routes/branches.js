@@ -35,6 +35,13 @@ export async function handleBranchRoutes(request, env, path, method, origin) {
   if (adminHolidayDelMatch && method === 'DELETE') {
     return deleteBranchHoliday(adminHolidayDelMatch[1], adminHolidayDelMatch[2], request, env, origin);
   }
+  const adminSlotMatch = path.match(/^\/api\/admin\/slots\/(\d+)$/);
+  if (adminSlotMatch && (method === 'PATCH' || method === 'PUT')) {
+    return updateSlot(adminSlotMatch[1], request, env, origin);
+  }
+  if (adminSlotMatch && method === 'DELETE') {
+    return deleteSlot(adminSlotMatch[1], request, env, origin);
+  }
 
   return null;
 }
@@ -315,4 +322,47 @@ async function deleteBranchHoliday(branchIdParam, holidayIdParam, request, env, 
   ).bind(admin.id, branchId, JSON.stringify(existing), ip).run();
 
   return jsonResponse({ message: 'Holiday deleted' }, 200, origin);
+}
+
+async function updateSlot(slotIdParam, request, env, origin) {
+  const { admin, error } = await authMiddleware(request, env);
+  if (error || !admin) return errorResponse(error || 'Unauthorized', 401, origin);
+
+  const slotId = Number(slotIdParam);
+  const existing = await env.DB.prepare('SELECT * FROM appointment_slots WHERE id = ?').bind(slotId).first();
+  if (!existing) return errorResponse('Slot not found', 404, origin);
+
+  const body = await parseBody(request);
+  if (!body) return errorResponse('Invalid JSON body', 400, origin);
+
+  const maxCap = body.max_capacity !== undefined ? Number(body.max_capacity) : existing.max_capacity;
+  const isActive = body.is_active !== undefined ? (body.is_active ? 1 : 0) : existing.is_active;
+
+  if (isNaN(maxCap) || maxCap < existing.booked_count) {
+    return errorResponse(`Capacity cannot be less than booked count (${existing.booked_count})`, 400, origin);
+  }
+
+  await env.DB.prepare(
+    'UPDATE appointment_slots SET max_capacity = ?, is_active = ? WHERE id = ?'
+  ).bind(maxCap, isActive, slotId).run();
+
+  const updated = await env.DB.prepare('SELECT * FROM appointment_slots WHERE id = ?').bind(slotId).first();
+  return jsonResponse({ slot: updated }, 200, origin);
+}
+
+async function deleteSlot(slotIdParam, request, env, origin) {
+  const { admin, error } = await authMiddleware(request, env);
+  if (error || !admin) return errorResponse(error || 'Unauthorized', 401, origin);
+
+  const slotId = Number(slotIdParam);
+  const existing = await env.DB.prepare('SELECT * FROM appointment_slots WHERE id = ?').bind(slotId).first();
+  if (!existing) return errorResponse('Slot not found', 404, origin);
+
+  if (existing.booked_count > 0) {
+    await env.DB.prepare('UPDATE appointment_slots SET is_active = 0 WHERE id = ?').bind(slotId).run();
+    return jsonResponse({ message: 'Slot has existing bookings and was deactivated instead of deleted' }, 200, origin);
+  }
+
+  await env.DB.prepare('DELETE FROM appointment_slots WHERE id = ?').bind(slotId).run();
+  return jsonResponse({ message: 'Slot deleted' }, 200, origin);
 }
