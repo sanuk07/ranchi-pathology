@@ -647,7 +647,7 @@
                     <span>5. Report Released</span>
                     <span class="timeline-timestamp" id="time-step-5">Pending</span>
                   </div>
-                  <div class="timeline-step-desc">Final verification by Chief Pathologist, digital signature, and report publishing.</div>
+                  <div class="timeline-step-desc">Diagnostic report uploaded and made available for secure download.</div>
                 </div>
               </div>
 
@@ -1099,8 +1099,14 @@
       // Status Badge
       const statusBadge = document.getElementById('res-status-badge');
       const bStatus = (booking.booking_status || 'new').toLowerCase();
-      statusBadge.className = 'status status-' + (bStatus === 'confirmed' ? 'confirmed' : bStatus === 'completed' ? 'completed' : bStatus === 'cancelled' ? 'cancelled' : 'pending');
-      statusBadge.textContent = bStatus.charAt(0).toUpperCase() + bStatus.slice(1);
+      statusBadge.className = 'status status-' + (
+        bStatus === 'confirmed' ? 'confirmed'
+        : bStatus === 'completed' ? 'completed'
+        : bStatus === 'cancelled' ? 'cancelled'
+        : bStatus === 'processing' ? 'processing'
+        : 'pending'
+      );
+      statusBadge.textContent = bStatus.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
       // Payment Badge
       const pStatus = (booking.payment_status || payment.payment_status || 'pending').toLowerCase();
@@ -1309,15 +1315,11 @@
       document.getElementById('step-1').className = 'timeline-item done';
       document.getElementById('time-step-1').textContent = UI.formatDate(booking.created_at) || 'Completed';
 
-      // Determine progression
-      // Step 2: Confirmed
-      const isConfirmed = bStatus === 'confirmed' || bStatus === 'completed' || sStatus === 'collected' || sStatus === 'received' || rStatus === 'ready';
-      // Step 3: Sample Collected
-      const isSampleCollected = sStatus === 'collected' || sStatus === 'received' || rStatus === 'processing' || rStatus === 'ready' || bStatus === 'completed';
-      // Step 4: Processing
-      const isProcessing = rStatus === 'processing' || rStatus === 'ready' || bStatus === 'completed';
-      // Step 5: Report Ready
+      // Determine progression across all booking_status, sample_status, and report_status states
       const isReportReady = rStatus === 'ready' || rStatus === 'delivered' || bStatus === 'completed';
+      const isProcessing = isReportReady || bStatus === 'processing' || sStatus === 'processing' || sStatus === 'completed' || rStatus === 'processing' || rStatus === 'uploaded';
+      const isSampleCollected = isProcessing || bStatus === 'sample_collected' || sStatus === 'collected' || sStatus === 'received' || sStatus === 'received_at_lab';
+      const isConfirmed = isSampleCollected || bStatus === 'confirmed';
 
       // Step 2 state
       const s2 = document.getElementById('step-2');
