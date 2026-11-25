@@ -299,6 +299,16 @@ CREATE TABLE IF NOT EXISTS reports (
 CREATE INDEX IF NOT EXISTS idx_reports_booking ON reports(booking_id);
 CREATE INDEX IF NOT EXISTS idx_reports_customer ON reports(customer_id);
 
+-- ─── Private Report File Chunks (D1 fallback when R2 is not enabled) ───
+CREATE TABLE IF NOT EXISTS report_file_chunks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  report_id INTEGER NOT NULL,
+  chunk_index INTEGER NOT NULL,
+  data_b64 TEXT NOT NULL,
+  FOREIGN KEY (report_id) REFERENCES reports(id)
+);
+CREATE INDEX IF NOT EXISTS idx_report_chunks_report ON report_file_chunks(report_id, chunk_index);
+
 -- ─── WhatsApp Messages ───
 CREATE TABLE IF NOT EXISTS whatsapp_messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

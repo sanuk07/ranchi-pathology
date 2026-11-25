@@ -128,16 +128,19 @@ async function uploadReport(request, env, origin) {
   const safeOriginalName = sanitizeString(file.name || `report.${ext}`).replace(/[^a-zA-Z0-9._-]/g, '_');
   const fileKey = `reports/${booking.booking_id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
 
-  await env.REPORTS_BUCKET.put(fileKey, arrayBuf, {
-    httpMetadata: {
-      contentType: fileMime,
-      contentDisposition: `inline; filename="${safeOriginalName}"`,
-    },
-    customMetadata: {
-      booking_id: booking.booking_id,
-      uploaded_by: admin.username,
-    },
-  });
+  const useR2 = !!env.REPORTS_BUCKET;
+  if (useR2) {
+    await env.REPORTS_BUCKET.put(fileKey, arrayBuf, {
+      httpMetadata: {
+        contentType: fileMime,
+        contentDisposition: `inline; filename="${safeOriginalName}"`,
+      },
+      customMetadata: {
+        booking_id: booking.booking_id,
+        uploaded_by: admin.username,
+      },
+    });
+  }
 
   const res = await env.DB.prepare(
     `INSERT INTO reports (
@@ -147,7 +150,7 @@ async function uploadReport(request, env, origin) {
     booking.id,
     booking.customer_id,
     title,
-    fileKey,
+    useR2 ? fileKey : `d1:${fileKey}`,
     safeOriginalName,
     fileMime,
     file.size,
@@ -156,6 +159,32 @@ async function uploadReport(request, env, origin) {
   ).run();
 
   const reportId = res.meta.last_row_id;
+
+  if (!useR2) {
+    // Store privately in D1 in 300KB raw chunks (base64 encoded) so no paid R2 setup is required
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS report_file_chunks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        report_id INTEGER NOT NULL,
+        chunk_index INTEGER NOT NULL,
+        data_b64 TEXT NOT NULL
+      )`
+    ).run();
+    const CHUNK_SIZE = 300 * 1024;
+    const chunkStmts = [];
+    let idx = 0;
+    for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
+      const slice = bytes.subarray(offset, offset + CHUNK_SIZE);
+      let bin = '';
+      for (let i = 0; i < slice.length; i++) bin += String.fromCharCode(slice[i]);
+      chunkStmts.push(
+        env.DB.prepare(
+          'INSERT INTO report_file_chunks (report_id, chunk_index, data_b64) VALUES (?, ?, ?)'
+        ).bind(reportId, idx++, btoa(bin))
+      );
+    }
+    if (chunkStmts.length) await env.DB.batch(chunkStmts);
+  }
 
   const batchStmts = [];
   if (replaceReportId) {
@@ -382,8 +411,33 @@ async function downloadReport(id, request, env, origin) {
     }
   }
 
-  const obj = await env.REPORTS_BUCKET.get(report.file_key);
-  if (!obj) {
+  let responseBody = null;
+  if (report.file_key && !report.file_key.startsWith('d1:') && env.REPORTS_BUCKET) {
+    const obj = await env.REPORTS_BUCKET.get(report.file_key);
+    if (obj) responseBody = obj.body;
+  } else {
+    const { results: chunks } = await env.DB.prepare(
+      'SELECT data_b64 FROM report_file_chunks WHERE report_id = ? ORDER BY chunk_index ASC'
+    ).bind(report.id).all();
+    if (chunks && chunks.length > 0) {
+      const arrays = chunks.map(c => {
+        const bin = atob(c.data_b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+      });
+      const totalLen = arrays.reduce((s, a) => s + a.length, 0);
+      const merged = new Uint8Array(totalLen);
+      let pos = 0;
+      for (const a of arrays) {
+        merged.set(a, pos);
+        pos += a.length;
+      }
+      responseBody = merged;
+    }
+  }
+
+  if (!responseBody) {
     return errorResponse('Report file not found in storage', 404, origin);
   }
 
@@ -409,5 +463,5 @@ async function downloadReport(id, request, env, origin) {
   headers.set('Content-Disposition', `attachment; filename="${report.file_name}"`);
   headers.set('X-Content-Type-Options', 'nosniff');
 
-  return new Response(obj.body, { status: 200, headers });
+  return new Response(responseBody, { status: 200, headers });
 }

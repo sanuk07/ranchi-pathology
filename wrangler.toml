@@ -1,6 +1,6 @@
-name = "ranchi-pathology-api"
-main = "worker/index.js"
+name = "ranchi-pathology"
 compatibility_date = "2024-09-01"
+pages_build_output_dir = "public"
 
 [vars]
 ENVIRONMENT = "demo"
@@ -15,9 +15,10 @@ binding = "DB"
 database_name = "ranchi-pathology-db"
 database_id = "1605ccbe-ea56-4ec4-9963-74e7a70ba2e8"
 
-[[r2_buckets]]
-binding = "REPORTS_BUCKET"
-bucket_name = "ranchi-pathology-reports"
+# Optional R2 bucket (only needed if you activate R2 in Cloudflare; otherwise reports are stored privately in D1):
+# [[r2_buckets]]
+# binding = "REPORTS_BUCKET"
+# bucket_name = "ranchi-pathology-reports"
 
 # Secret bindings (set via `wrangler secret put`)
 # ADMIN_JWT_SECRET - JWT signing secret
