@@ -40,18 +40,22 @@ async function getDashboardStats(request, env, origin) {
   const dateTo = (url.searchParams.get('date_to') || url.searchParams.get('to') || url.searchParams.get('end_date') || '').trim();
 
   const conditions = [];
+  const bConditions = [];
   const params = [];
 
   if (branchId && /^\d+$/.test(branchId)) {
     conditions.push('branch_id = ?');
+    bConditions.push('b.branch_id = ?');
     params.push(Number(branchId));
   }
   if (dateFrom) {
     conditions.push('date(created_at) >= ?');
+    bConditions.push('date(b.created_at) >= ?');
     params.push(dateFrom);
   }
   if (dateTo) {
     conditions.push('date(created_at) <= ?');
+    bConditions.push('date(b.created_at) <= ?');
     params.push(dateTo);
   }
 
@@ -102,7 +106,7 @@ async function getDashboardStats(request, env, origin) {
       `SELECT br.id, br.name, br.name AS branch_name, COUNT(b.id) AS booking_count,
               COALESCE(SUM(CASE WHEN b.payment_status = 'paid' THEN b.total_amount ELSE 0 END), 0) AS revenue
        FROM branches br
-       LEFT JOIN bookings b ON br.id = b.branch_id ${conditions.length ? 'AND ' + conditions.map(c => 'b.' + c).join(' AND ') : ''}
+       LEFT JOIN bookings b ON br.id = b.branch_id ${bConditions.length ? 'AND ' + bConditions.join(' AND ') : ''}
        WHERE br.is_active = 1
        GROUP BY br.id
        ORDER BY br.sort_order ASC`
@@ -124,7 +128,7 @@ async function getDashboardStats(request, env, origin) {
               b.payment_status, b.created_at, br.name AS branch_name
        FROM bookings b
        LEFT JOIN branches br ON b.branch_id = br.id
-       ${conditions.length ? 'WHERE ' + conditions.map(c => 'b.' + c).join(' AND ') : ''}
+       ${bConditions.length ? 'WHERE ' + bConditions.join(' AND ') : ''}
        ORDER BY b.created_at DESC LIMIT 10`
     ).bind(...params).all(),
     env.DB.prepare('SELECT COUNT(*) AS count FROM notifications WHERE is_read = 0').first(),
