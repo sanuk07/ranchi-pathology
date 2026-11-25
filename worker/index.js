@@ -49,6 +49,13 @@ export default {
       : url.pathname;
     const method = request.method.toUpperCase();
 
+    // Serve static frontend assets for non-API requests (Cloudflare Workers + Assets)
+    if (!path.startsWith('/api/') && path !== '/api') {
+      if (env.ASSETS) {
+        return env.ASSETS.fetch(request);
+      }
+    }
+
     try {
       // Health check
       if (path === '/api/health' && method === 'GET') {
