@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranchi Pathology — Accurate Diagnostics &amp; Home Sample Collection in Jharkhand</title>
+  <meta name="description" content="Ranchi Pathology provides trusted pathology tests, preventive health packages, and doorstep home sample collection across Chandwa, Lohardaga, and Ranchi.">
+  <meta property="og:title" content="Ranchi Pathology — Your Health, Our Priority">
+  <meta property="og:description" content="Reliable diagnostic testing, home blood collection, and secure online reports across Chandwa, Lohardaga, and Ranchi, Jharkhand.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content { padding-top: 84px; }
+    
+    /* Hero section */
+    .hero-section {
+      padding: var(--space-12) 0 var(--space-16);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-content {
+      max-width: 780px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .hero-title {
+      font-size: var(--fs-4xl);
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: var(--space-4);
+      letter-spacing: -0.02em;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, var(--blue), #0284c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: var(--fs-lg);
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: var(--space-8);
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-10);
+    }
+    .hero-search {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .hero-search .form-input {
+      padding-left: 48px;
+      padding-right: 120px;
+      height: 54px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 20px rgba(20,99,197,0.1);
+    }
+    .hero-search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      display: flex;
+    }
+    .hero-search-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* Trust highlights */
+    .trust-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-top: var(--space-10);
+    }
+    .trust-stat-card {
+      text-align: center;
+      padding: var(--space-4);
+    }
+    .trust-stat-value {
+      font-size: var(--fs-2xl);
+      font-weight: 800;
+      color: var(--blue);
+      margin-bottom: var(--space-1);
+    }
+    .trust-stat-label {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Trust Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+    }
+    .feature-card {
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .feature-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      background: rgba(20,99,197,0.1);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+    }
+    .feature-card h3 {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .feature-card p {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Categories Grid */
+    .category-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: var(--space-6) var(--space-4);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .category-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(20,99,197,0.1), rgba(103,232,249,0.2));
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-3);
+      transition: var(--transition-fast);
+    }
+    .category-card:hover .category-icon {
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+    .category-name {
+      font-size: var(--fs-base);
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: var(--space-1);
+    }
+    .category-count {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+
+    /* Package Cards */
+    .package-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      position: relative;
+    }
+    .package-header {
+      margin-bottom: var(--space-4);
+    }
+    .package-name {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .package-desc {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      margin-bottom: var(--space-4);
+      line-height: 1.5;
+    }
+    .package-tests-list {
+      margin-bottom: var(--space-6);
+      border-top: 1px dashed rgba(20,99,197,0.15);
+      padding-top: var(--space-4);
+    }
+    .package-test-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--fs-xs);
+      color: var(--dark-text);
+      margin-bottom: var(--space-2);
+    }
+    .package-test-item svg {
+      color: var(--success);
+      flex-shrink: 0;
+    }
+    .package-pricing {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+      flex-wrap: wrap;
+    }
+
+    /* Branch Cards */
+    .branch-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+    .branch-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+    .branch-name {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .branch-meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      font-size: var(--fs-sm);
+      color: var(--dark-text);
+      margin-bottom: var(--space-6);
+    }
+    .branch-meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+    .branch-meta-row svg {
+      color: var(--blue);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Home Collection Process */
+    .step-box-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+      margin-top: var(--space-8);
+      position: relative;
+    }
+    .step-box {
+      text-align: center;
+      padding: var(--space-6) var(--space-4);
+      position: relative;
+    }
+    .step-box-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--fs-base);
+      margin: 0 auto var(--space-4);
+      box-shadow: 0 4px 12px rgba(20,99,197,0.25);
+    }
+    .step-box h4 {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .step-box p {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* CTA Section */
+    .cta-banner {
+      background: linear-gradient(135deg, var(--navy), #1e5296);
+      color: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10) var(--space-8);
+      text-align: center;
+      box-shadow: var(--glass-shadow-lg);
+    }
+    .cta-banner h2 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: var(--space-3);
+    }
+    .cta-banner p {
+      font-size: var(--fs-base);
+      color: rgba(255,255,255,0.85);
+      max-width: 600px;
+      margin: 0 auto var(--space-8);
+    }
+    .cta-banner-buttons {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1024px) {
+      .features-grid, .trust-stat-grid, .step-box-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .hero-title { font-size: var(--fs-3xl); }
+      .features-grid, .trust-stat-grid, .step-box-grid { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; width: 100%; }
+      .hero-actions .btn { width: 100%; }
+      .cta-banner { padding: var(--space-8) var(--space-4); }
+      .cta-banner-buttons { flex-direction: column; }
+      .cta-banner-buttons .btn { width: 100%; }
+      .hero-search .form-input { padding-right: var(--space-4); margin-bottom: var(--space-2); border-radius: var(--radius-md); }
+      .hero-search-icon { top: 27px; transform: translateY(-50%); }
+      .hero-search-btn { position: static; transform: none; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-content fade-in">
+          <div class="hero-badge">
+            <span class="badge badge-blue">
+              <span class="icon-slot" data-icon="shield"></span>
+              &nbsp;Diagnostic Pathology Services &bull; Jharkhand
+            </span>
+          </div>
+          <h1 class="hero-title">
+            Your Health, <span>Our Priority.</span>
+          </h1>
+          <p class="hero-subtitle">
+            Reliable diagnostic testing, convenient bookings and trusted healthcare services across Chandwa, Lohardaga, and Ranchi.
+          </p>
+
+          <div class="hero-actions">
+            <a href="/booking.html" class="btn btn-primary btn-lg">
+              <span class="icon-slot" data-icon="calendar"></span>
+              <span>Book a Test</span>
+            </a>
+            <a href="/tests.html" class="btn btn-secondary btn-lg">
+              <span class="icon-slot" data-icon="flask"></span>
+              <span>View All Tests</span>
+            </a>
+          </div>
+
+          <!-- Hero Search Box -->
+          <div class="hero-search">
+            <div class="hero-search-icon icon-slot" data-icon="search"></div>
+            <input type="text" id="home-search-input" class="form-input" placeholder="Search blood test, lipid profile, CBC, thyroid..." aria-label="Search diagnostic tests">
+            <button type="button" id="home-search-btn" class="btn btn-primary hero-search-btn">
+              <span>Search</span>
+            </button>
+          </div>
+
+          <!-- Trust Quick Stats -->
+          <div class="trust-stat-grid">
+            <div class="glass-card-static trust-stat-card">
+              <div class="trust-stat-value">Wide</div>
+              <div class="trust-stat-label">Test Catalogue</div>
+            </div>
+            <div class="glass-card-static trust-stat-card">
+              <div class="trust-stat-value">3</div>
+              <div class="trust-stat-label">Branch Locations</div>
+            </div>
+            <div class="glass-card-static trust-stat-card">
+              <div class="trust-stat-value">Home</div>
+              <div class="trust-stat-label">Sample Collection</div>
+            </div>
+            <div class="glass-card-static trust-stat-card">
+              <div class="trust-stat-value">Online</div>
+              <div class="trust-stat-label">Secure Reports</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust Features Section (4 Cards) -->
+    <section class="section" style="background: rgba(255,255,255,0.3); border-top: 1px solid rgba(20,99,197,0.06); border-bottom: 1px solid rgba(20,99,197,0.06);">
+      <div class="container">
+        <div style="text-align: center; max-width: 650px; margin: 0 auto var(--space-8);">
+          <span class="badge badge-green" style="margin-bottom: var(--space-2);">Why Ranchi Pathology</span>
+          <h2 class="section-title">Healthcare Services Designed Around You</h2>
+          <p class="section-subtitle">Focused on reliable diagnostic testing, simple booking, and secure report delivery.</p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Feature 1 -->
+          <div class="glass-card feature-card">
+            <div class="feature-icon-box icon-slot" data-icon="shield"></div>
+            <h3>Reliable Diagnostic Services</h3>
+            <p>Organized sample processing, clear test preparation guidance, and transparent pricing across routine and specialized panels.</p>
+          </div>
+          <!-- Feature 2 -->
+          <div class="glass-card feature-card">
+            <div class="feature-icon-box icon-slot" data-icon="truck"></div>
+            <h3>Convenient Home Collection</h3>
+            <p>Schedule doorstep sample collection in Chandwa, Lohardaga, and Ranchi during your preferred time slot.</p>
+          </div>
+          <!-- Feature 3 -->
+          <div class="glass-card feature-card">
+            <div class="feature-icon-box icon-slot" data-icon="building"></div>
+            <h3>Multiple Branch Locations</h3>
+            <p>Visit any of our three branches in Chandwa, Lohardaga, and Ranchi with slot-based scheduling.</p>
+          </div>
+          <!-- Feature 4 -->
+          <div class="glass-card feature-card">
+            <div class="feature-icon-box icon-slot" data-icon="fileText"></div>
+            <h3>Secure Online Reports</h3>
+            <p>Track your booking progress online and download your medical reports securely using your private tracking link.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Popular Test Categories Section -->
+    <section class="section">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <span class="badge badge-blue" style="margin-bottom: var(--space-2);">Routine &amp; Specialized</span>
+            <h2 class="section-title">Popular Test Categories</h2>
+            <p class="section-subtitle" style="margin-bottom: 0;">Browse essential pathology test categories designed for complete wellness.</p>
+          </div>
+          <a href="/tests.html" class="btn btn-secondary btn-sm">
+            <span>View All Tests</span>
+            <span class="icon-slot" data-icon="arrowRight"></span>
+          </a>
+        </div>
+
+        <div id="categories-grid" class="grid grid-4">
+          <!-- Loaded dynamically or fallback -->
+          <div class="glass-card skeleton" style="height: 140px;"></div>
+          <div class="glass-card skeleton" style="height: 140px;"></div>
+          <div class="glass-card skeleton" style="height: 140px;"></div>
+          <div class="glass-card skeleton" style="height: 140px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Health Packages Section -->
+    <section class="section" style="background: rgba(255,255,255,0.4); border-top: 1px solid rgba(20,99,197,0.06);">
+      <div class="container">
+        <div style="text-align: center; max-width: 680px; margin: 0 auto var(--space-8);">
+          <span class="badge badge-green" style="margin-bottom: var(--space-2);">Cost-Saving Preventive Care</span>
+          <h2 class="section-title">Featured Health Packages</h2>
+          <p class="section-subtitle">Complete health assessments bundled with maximum savings for you and your family.</p>
+        </div>
+
+        <div id="packages-grid" class="grid grid-3">
+          <!-- Loaded dynamically -->
+          <div class="glass-card skeleton" style="height: 320px;"></div>
+          <div class="glass-card skeleton" style="height: 320px;"></div>
+          <div class="glass-card skeleton" style="height: 320px;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--space-8);">
+          <a href="/packages.html" class="btn btn-secondary">
+            <span>Explore All Health Packages</span>
+            <span class="icon-slot" data-icon="arrowRight"></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Home Sample Collection Explanation Section -->
+    <section class="section">
+      <div class="container">
+        <div class="glass-card-static" style="padding: var(--space-10) var(--space-8); border-radius: var(--radius-xl);">
+          <div style="text-align: center; max-width: 700px; margin: 0 auto var(--space-6);">
+            <span class="badge badge-blue" style="margin-bottom: var(--space-2);">
+              <span class="icon-slot" data-icon="truck"></span>
+              &nbsp;Doorstep Service
+            </span>
+            <h2 class="section-title">How Home Sample Collection Works</h2>
+            <p class="section-subtitle">No long clinic queues or travel hassles. Get tested in the comfort of your own living room.</p>
+          </div>
+
+          <div class="step-box-grid">
+            <div class="step-box">
+              <div class="step-box-num">1</div>
+              <h4>Select Your Tests</h4>
+              <p>Pick tests or health packages online. Add them to your booking cart with one click.</p>
+            </div>
+            <div class="step-box">
+              <div class="step-box-num">2</div>
+              <h4>Choose Slot &amp; Address</h4>
+              <p>Pick a convenient morning slot and enter your address in Chandwa, Lohardaga, or Ranchi.</p>
+            </div>
+            <div class="step-box">
+              <div class="step-box-num">3</div>
+              <h4>Hygienic Home Visit</h4>
+              <p>A trained sample collector visits at your scheduled slot with single-use sterile collection materials.</p>
+            </div>
+            <div class="step-box">
+              <div class="step-box-num">4</div>
+              <h4>Secure Online Report</h4>
+              <p>Once ready, your report is uploaded securely to the portal for private viewing and download.</p>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: var(--space-8);">
+            <a href="/booking.html?type=home" class="btn btn-primary btn-lg">
+              <span class="icon-slot" data-icon="calendar"></span>
+              <span>Schedule Home Sample Collection</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Branch Locations Section -->
+    <section class="section" style="background: rgba(255,255,255,0.3); border-top: 1px solid rgba(20,99,197,0.06); border-bottom: 1px solid rgba(20,99,197,0.06);">
+      <div class="container">
+        <div style="text-align: center; max-width: 650px; margin: 0 auto var(--space-8);">
+          <span class="badge badge-blue" style="margin-bottom: var(--space-2);">Our Network</span>
+          <h2 class="section-title">Visit Our Diagnostic Branches</h2>
+          <p class="section-subtitle">State-of-the-art diagnostic facilities easily accessible in 3 prime locations across Jharkhand.</p>
+        </div>
+
+        <div id="branches-grid" class="grid grid-3">
+          <!-- Loaded dynamically or fallback -->
+          <div class="glass-card skeleton" style="height: 220px;"></div>
+          <div class="glass-card skeleton" style="height: 220px;"></div>
+          <div class="glass-card skeleton" style="height: 220px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section">
+      <div class="container">
+        <div class="cta-banner fade-in">
+          <h2>Take Charge of Your Health Today</h2>
+          <p>Early screening prevents critical complications. Book your blood checkup or preventive health profile with Ranchi Pathology right now.</p>
+          <div class="cta-banner-buttons">
+            <a href="/booking.html" class="btn btn-primary btn-lg" style="background: var(--white); color: var(--navy); box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+              <span class="icon-slot" data-icon="calendar"></span>
+              <span>Book Appointment Online</span>
+            </a>
+            <a href="/contact.html" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: var(--white);">
+              <span class="icon-slot" data-icon="phone"></span>
+              <span>Contact Our Helpline</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer"></div>
+
+  <!-- Standard Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script>
+    // 1. Initialize Navbar & Footer
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('home');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    // 2. Render all static icon-slots
+    function renderIcons() {
+      document.querySelectorAll('.icon-slot').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        if (name) el.innerHTML = Components.icon(name);
+      });
+    }
+    renderIcons();
+
+    // 3. Demo banner check
+    (async function checkDemoBanner() {
+      try {
+        const res = await API.get('/settings/public');
+        const env = res.environment || res.settings?.environment;
+        if (env === 'demo') {
+          const banner = document.createElement('div');
+          banner.className = 'demo-banner';
+          banner.innerHTML = 'DEMO MODE — Sample data &amp; simulated workflows active';
+          const container = document.getElementById('demo-banner-container');
+          if (container) container.replaceWith(banner);
+          else document.body.prepend(banner);
+        }
+      } catch (_) {}
+    })();
+
+    // 4. Cart Helper (Key: rp_cart)
+    function addToCartAndBook(item, redirect = true) {
+      try {
+        let cart = [];
+        const raw = localStorage.getItem('rp_cart');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          cart = Array.isArray(parsed) ? parsed : (parsed.items || []);
+        }
+        const exists = cart.some(i => i.id === item.id && i.type === item.type);
+        if (!exists) {
+          cart.push(item);
+          localStorage.setItem('rp_cart', JSON.stringify(cart));
+          UI.toast(`Added ${item.name} to booking!`, 'success');
+        } else {
+          UI.toast(`${item.name} is already in your booking cart`, 'info');
+        }
+        if (redirect) {
+          setTimeout(() => {
+            window.location.href = `/booking.html?${item.type}=${item.id}`;
+          }, 350);
+        }
+      } catch (err) {
+        window.location.href = `/booking.html?${item.type}=${item.id}`;
+      }
+    }
+
+    // 5. Search Box Handler
+    const searchInput = document.getElementById('home-search-input');
+    const searchBtn = document.getElementById('home-search-btn');
+    function executeSearch() {
+      const q = searchInput.value.trim();
+      if (q) {
+        window.location.href = `/tests.html?search=${encodeURIComponent(q)}`;
+      } else {
+        window.location.href = '/tests.html';
+      }
+    }
+    if (searchBtn) searchBtn.addEventListener('click', executeSearch);
+    if (searchInput) {
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') executeSearch();
+      });
+    }
+
+    // 6. Fallback Categories Data
+    const fallbackCategories = [
+      { id: 1, name: 'Blood Tests', slug: 'blood-tests', icon: 'droplet', test_count: 5 },
+      { id: 2, name: 'Diabetes Tests', slug: 'diabetes-tests', icon: 'activity', test_count: 4 },
+      { id: 3, name: 'Thyroid Tests', slug: 'thyroid-tests', icon: 'shield', test_count: 3 },
+      { id: 4, name: 'Liver Profile', slug: 'liver-profile', icon: 'clipboard', test_count: 3 },
+      { id: 5, name: 'Kidney Profile', slug: 'kidney-profile', icon: 'heart', test_count: 3 },
+      { id: 6, name: 'Heart Health', slug: 'heart-health', icon: 'heartPulse', test_count: 2 },
+      { id: 7, name: 'Full Body Checkup', slug: 'full-body-checkup', icon: 'userCheck', test_count: 4 },
+      { id: 8, name: 'Other Tests', slug: 'other-tests', icon: 'flask', test_count: 6 }
+    ];
+
+    // 7. Render Categories
+    async function loadCategories() {
+      const container = document.getElementById('categories-grid');
+      let categories = [];
+      try {
+        const res = await API.get('/categories');
+        categories = res.categories || res || [];
+      } catch (_) {
+        categories = fallbackCategories;
+      }
+      if (!categories || categories.length === 0) categories = fallbackCategories;
+
+      container.innerHTML = categories.map(cat => {
+        const iconKey = cat.icon || 'flask';
+        return `
+          <a href="/tests.html?category=${cat.id}" class="glass-card category-card">
+            <div class="category-icon">${Components.icon(iconKey)}</div>
+            <div class="category-name">${UI.escapeHtml(cat.name)}</div>
+            <div class="category-count">${cat.test_count ? cat.test_count + ' tests available' : 'Essential screening'}</div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    // 8. Fallback Packages Data
+    const fallbackPackages = [
+      {
+        id: 1,
+        name: 'Basic Health Checkup',
+        slug: 'basic-health-checkup',
+        description: 'Essential tests for routine health screening including CBC, blood sugar, and urine examination.',
+        original_price: 700,
+        offer_price: 549,
+        discount_percent: 22,
+        tests: [{ name: 'Complete Blood Count (CBC)' }, { name: 'Fasting Blood Sugar' }, { name: 'Urine Analysis' }]
+      },
+      {
+        id: 2,
+        name: 'Diabetes Care Package',
+        slug: 'diabetes-care-package',
+        description: 'Complete diabetes monitoring with fasting sugar, post-prandial sugar, and 3-month HbA1c test.',
+        original_price: 650,
+        offer_price: 499,
+        discount_percent: 23,
+        tests: [{ name: 'Fasting Blood Sugar' }, { name: 'Post Prandial Sugar' }, { name: 'HbA1c Test' }]
+      },
+      {
+        id: 4,
+        name: 'Full Body Checkup',
+        slug: 'full-body-checkup',
+        description: 'Comprehensive health screening covering complete blood count, liver, kidney, thyroid, sugar and urine panels.',
+        original_price: 3500,
+        offer_price: 2499,
+        discount_percent: 29,
+        tests: [{ name: 'Complete Blood Count' }, { name: 'Liver Function Test (LFT)' }, { name: 'Kidney Function Test (KFT)' }, { name: 'TSH Thyroid' }, { name: 'Lipid Profile' }]
+      }
+    ];
+
+    // 9. Render Packages
+    async function loadPackages() {
+      const container = document.getElementById('packages-grid');
+      let packages = [];
+      try {
+        const res = await API.get('/packages');
+        packages = res.packages || res || [];
+      } catch (_) {
+        packages = fallbackPackages;
+      }
+      if (!packages || packages.length === 0) packages = fallbackPackages;
+
+      // Show top 3 packages on homepage
+      const featured = packages.slice(0, 3);
+      container.innerHTML = featured.map(pkg => {
+        const tests = pkg.tests || [];
+        const testsHtml = tests.slice(0, 4).map(t => `
+          <div class="package-test-item">
+            ${Components.icon('check')}
+            <span>${UI.escapeHtml(t.name)}</span>
+          </div>
+        `).join('');
+
+        const extraCount = tests.length > 4 ? `<div class="package-test-item" style="color:var(--blue);font-weight:600;">+ ${tests.length - 4} more tests included</div>` : '';
+
+        return `
+          <div class="glass-card package-card">
+            <div>
+              <div class="package-header">
+                <span class="badge badge-green" style="margin-bottom:var(--space-2);">${pkg.discount_percent || 20}% OFF</span>
+                <h3 class="package-name">${UI.escapeHtml(pkg.name)}</h3>
+                <p class="package-desc">${UI.escapeHtml(pkg.description || 'Comprehensive multi-parameter diagnostic screening.')}</p>
+              </div>
+
+              <div class="package-tests-list">
+                ${testsHtml}
+                ${extraCount}
+              </div>
+            </div>
+
+            <div>
+              <div class="package-pricing">
+                <span class="price">${UI.formatCurrency(pkg.offer_price || pkg.price)}</span>
+                ${pkg.original_price ? `<span class="price-original">${UI.formatCurrency(pkg.original_price)}</span>` : ''}
+                <span class="price-discount">Save ${UI.formatCurrency((pkg.original_price || 0) - (pkg.offer_price || pkg.price))}</span>
+              </div>
+
+              <div style="display:flex;gap:var(--space-2);">
+                <button type="button" class="btn btn-primary btn-block btn-book-pkg" data-id="${pkg.id}" data-name="${UI.escapeHtml(pkg.name)}" data-price="${pkg.offer_price || pkg.price}">
+                  <span class="icon-slot" data-icon="calendar"></span>
+                  <span>Book Now</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach booking click handlers
+      container.querySelectorAll('.btn-book-pkg').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.getAttribute('data-id'));
+          const name = btn.getAttribute('data-name');
+          const price = Number(btn.getAttribute('data-price'));
+          addToCartAndBook({ type: 'package', id, name, price }, true);
+        });
+      });
+      renderIcons();
+    }
+
+    // 10. Fallback Branches Data
+    const fallbackBranches = [
+      {
+        id: 1,
+        name: 'Chandwa Branch',
+        slug: 'chandwa',
+        city: 'Chandwa',
+        address: 'Main Road, Near Bus Stand, Chandwa, Latehar District',
+        phone: '6204522977',
+        opening_time: '08:00',
+        closing_time: '20:00',
+        home_collection_charge_type: 'free'
+      },
+      {
+        id: 2,
+        name: 'Lohardaga Branch',
+        slug: 'lohardaga',
+        city: 'Lohardaga',
+        address: 'Court Road, Opposite Sadar Hospital, Lohardaga',
+        phone: '6204522977',
+        opening_time: '08:00',
+        closing_time: '20:00',
+        home_collection_charge_type: 'free'
+      },
+      {
+        id: 3,
+        name: 'Ranchi Main Branch',
+        slug: 'ranchi',
+        city: 'Ranchi',
+        address: 'Circular Road, Lalpur Chowk, Ranchi, Jharkhand',
+        phone: '6204522977',
+        opening_time: '07:30',
+        closing_time: '20:30',
+        home_collection_charge_type: 'free'
+      }
+    ];
+
+    // 11. Render Branches
+    async function loadBranches() {
+      const container = document.getElementById('branches-grid');
+      let branches = [];
+      try {
+        const res = await API.get('/branches');
+        branches = res.branches || res || [];
+      } catch (_) {
+        branches = fallbackBranches;
+      }
+      if (!branches || branches.length === 0) branches = fallbackBranches;
+
+      container.innerHTML = branches.map(b => {
+        const rawPhone = (b.phone && !/not yet configured/i.test(b.phone)) ? b.phone : '';
+        const phoneDigits = rawPhone.replace(/\D/g, '');
+        const formattedPhone = rawPhone ? UI.formatPhone(rawPhone) : 'Phone not yet configured';
+        const openTime = UI.formatTime(b.opening_time || '08:00');
+        const closeTime = UI.formatTime(b.closing_time || '20:00');
+        const address = (b.address && b.address !== 'Address not yet configured') 
+          ? b.address 
+          : `${b.name} Center, Jharkhand`;
+
+        return `
+          <div class="glass-card branch-card">
+            <div>
+              <div class="branch-card-header">
+                <div>
+                  <h3 class="branch-name">${UI.escapeHtml(b.name)}</h3>
+                  <span class="badge badge-blue" style="margin-top:var(--space-1);">${UI.escapeHtml(b.city || 'Jharkhand')}</span>
+                </div>
+                <span class="badge badge-green">Open Daily</span>
+              </div>
+
+              <div class="branch-meta">
+                <div class="branch-meta-row">
+                  ${Components.icon('mapPin')}
+                  <span>${UI.escapeHtml(address)}</span>
+                </div>
+                <div class="branch-meta-row">
+                  ${Components.icon('clock')}
+                  <span>${openTime} – ${closeTime}</span>
+                </div>
+                <div class="branch-meta-row">
+                  ${Components.icon('phone')}
+                  ${phoneDigits.length >= 6
+                    ? `<a href="tel:${phoneDigits}" style="color:var(--dark-text);font-weight:700;">${UI.escapeHtml(formattedPhone)}</a>`
+                    : `<span style="color:var(--muted);font-weight:600;">${UI.escapeHtml(formattedPhone)}</span>`
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+              <a href="/booking.html?branch=${b.id}" class="btn btn-primary btn-sm" style="flex:1;">
+                <span>Book at this Branch</span>
+              </a>
+              <a href="/contact.html" class="btn btn-secondary btn-sm" aria-label="View branch contact details" title="View details">
+                ${Components.icon('mapPin')}
+              </a>
+            </div>
+          </div>
+        `;
+                ${Components.icon('arrowRight')}
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 12. Run on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCategories();
+      loadPackages();
+      loadBranches();
+    });
+  </script>
+</body>
+</html>

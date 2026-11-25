@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Logs — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field">
+              <label for="al-entity">Entity Type</label>
+              <select id="al-entity" class="form-input">
+                <option value="">All Entities</option>
+                <option value="booking">Booking</option>
+                <option value="payment">Payment</option>
+                <option value="report">Report</option>
+                <option value="test">Test</option>
+                <option value="package">Package</option>
+                <option value="offer">Offer</option>
+                <option value="branch">Branch</option>
+                <option value="settings">Settings</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="al-action">Action Search</label>
+              <input type="text" id="al-action" class="form-input" placeholder="e.g. verify, status, upload...">
+            </div>
+            <div class="filter-field">
+              <label for="al-from">From Date</label>
+              <input type="date" id="al-from" class="form-input">
+            </div>
+            <div class="filter-field">
+              <label for="al-to">To Date</label>
+              <input type="date" id="al-to" class="form-input">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="al-filter-btn">Apply</button>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">System Audit Trail <span id="al-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+            <button type="button" class="btn btn-secondary btn-sm" id="al-refresh-btn">Refresh</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Admin</th>
+                  <th>Action</th>
+                  <th>Entity</th>
+                  <th>Details</th>
+                  <th>IP Address</th>
+                </tr>
+              </thead>
+              <tbody id="al-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Loading audit logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="al-cards"></div>
+          <div class="pagination" id="al-pagination"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let currentPage = 1;
+
+      async function loadLogs(page = 1) {
+        currentPage = page;
+        const params = new URLSearchParams({ page: String(page), limit: '25' });
+        const entity = document.getElementById('al-entity').value;
+        const action = document.getElementById('al-action').value.trim();
+        const from = document.getElementById('al-from').value;
+        const to = document.getElementById('al-to').value;
+        if (entity) params.set('entity_type', entity);
+        if (action) params.set('action', action);
+        if (from) { params.set('from', from); params.set('start_date', from); }
+        if (to) { params.set('to', to); params.set('end_date', to); }
+
+        try {
+          const res = await API.get(`/admin/audit-logs?${params.toString()}`);
+          const list = AdminCommon.unwrapList(res, ['logs', 'audit_logs', 'data', 'items']);
+          const total = res.total ?? res.pagination?.total ?? list.length;
+          const totalPages = res.total_pages ?? res.totalPages ?? res.pagination?.totalPages ?? 1;
+          document.getElementById('al-count').textContent = String(total);
+          renderLogs(list);
+          AdminCommon.renderPagination('al-pagination', currentPage, totalPages, loadLogs);
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load audit logs', 'error');
+        }
+      }
+
+      function renderLogs(list) {
+        const tbody = document.getElementById('al-tbody');
+        const cards = document.getElementById('al-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('clipboard', 'No audit logs found', 'Administrative actions will be recorded here.');
+          tbody.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        const fmtVal = (v) => {
+          if (!v) return '';
+          const s = typeof v === 'string' ? v : JSON.stringify(v);
+          return s.length > 90 ? s.slice(0, 90) + '…' : s;
+        };
+
+        tbody.innerHTML = list.map(l => `
+          <tr>
+            <td style="white-space:nowrap;font-size:var(--fs-xs)">${UI.formatDateTime(l.created_at)}</td>
+            <td><strong>${UI.escapeHtml(l.admin_name || l.username || (l.admin_id ? `Admin #${l.admin_id}` : 'System'))}</strong></td>
+            <td><span class="badge badge-blue">${UI.escapeHtml(l.action)}</span></td>
+            <td>${UI.escapeHtml(l.entity_type || '—')} ${l.entity_id ? `#${l.entity_id}` : ''}</td>
+            <td style="font-size:var(--fs-xs);max-width:280px">
+              ${l.old_value ? `<div style="color:var(--muted)">Old: ${UI.escapeHtml(fmtVal(l.old_value))}</div>` : ''}
+              ${l.new_value ? `<div>New: ${UI.escapeHtml(fmtVal(l.new_value))}</div>` : ''}
+            </td>
+            <td style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(l.ip_address || '—')}</td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(l => `
+          <div class="data-card">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(l.action)}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(l.admin_name || l.username || 'System')} · ${UI.formatDateTime(l.created_at)}</div>
+              </div>
+              <span class="badge badge-blue">${UI.escapeHtml(l.entity_type || '—')}</span>
+            </div>
+            <div style="font-size:var(--fs-xs);color:var(--dark-text)">
+              ${l.new_value ? `<div>${UI.escapeHtml(fmtVal(l.new_value))}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'audit-logs',
+          title: 'Audit Logs',
+          subtitle: 'Security and administrative activity trail',
+        });
+
+        document.getElementById('al-filter-btn').addEventListener('click', () => loadLogs(1));
+        document.getElementById('al-refresh-btn').addEventListener('click', () => loadLogs(currentPage));
+        document.getElementById('al-action').addEventListener('input', UI.debounce(() => loadLogs(1), 300));
+
+        await loadLogs(1);
+      });
+    })();
+  </script>
+</body>
+</html>

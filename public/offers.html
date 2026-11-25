@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Offers & Discounts — Ranchi Pathology</title>
+  <meta name="description" content="Save on diagnostic blood tests and full body checkup packages with active coupons and discounts at Ranchi Pathology. Valid across Chandwa, Lohardaga, and Ranchi.">
+  <meta name="keywords" content="pathology coupon codes ranchi, lab test discounts jharkhand, blood test promo codes, health checkup offer">
+  <meta property="og:title" content="Special Offers & Discounts — Ranchi Pathology">
+  <meta property="og:description" content="Copy verified coupon codes for instant discounts on blood tests and health checkup packages.">
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content {
+      padding-top: 88px;
+      padding-bottom: var(--space-16);
+      min-height: calc(100vh - 350px);
+    }
+    .offers-header {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-6);
+    }
+    .offers-header h1 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+      letter-spacing: -0.02em;
+    }
+    .offers-header p {
+      color: var(--muted);
+      font-size: var(--fs-base);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Offers Grid & Coupon Card */
+    .offers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-12);
+    }
+
+    .coupon-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(20, 99, 197, 0.18);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    .coupon-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glass-shadow-lg);
+      border-color: rgba(20, 99, 197, 0.35);
+    }
+
+    /* Decorative coupon ribbon */
+    .coupon-ribbon {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--blue), var(--cyan));
+    }
+
+    .coupon-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .discount-figure {
+      font-size: var(--fs-2xl);
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+    .discount-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .coupon-title {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .coupon-desc {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+    }
+
+    /* Coupon Rules Box */
+    .coupon-rules {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px dashed rgba(20, 99, 197, 0.2);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .rule-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--fs-xs);
+      color: var(--dark-text);
+    }
+    .rule-item svg {
+      width: 14px;
+      height: 14px;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+
+    /* Coupon Code Box & Actions */
+    .coupon-action-box {
+      border-top: 1px solid rgba(20, 99, 197, 0.1);
+      padding-top: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .code-display-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      background: rgba(20, 99, 197, 0.06);
+      border: 1px dashed var(--blue);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+    }
+    .coupon-code-text {
+      font-family: monospace;
+      font-size: var(--fs-base);
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: 0.08em;
+    }
+    .btn-copy-code {
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--fs-xs);
+      min-height: 32px;
+      border-radius: var(--radius-sm);
+    }
+
+    .checkout-instruction {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .checkout-instruction span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .checkout-instruction a {
+      font-weight: 600;
+      color: var(--blue);
+    }
+
+    /* How to Redeem Section */
+    .how-to-redeem {
+      margin-top: var(--space-8);
+      padding: var(--space-8);
+    }
+    .redeem-heading {
+      text-align: center;
+      margin-bottom: var(--space-6);
+    }
+    .redeem-heading h2 {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-1);
+    }
+    .redeem-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+    .redeem-step-card {
+      text-align: center;
+      padding: var(--space-4);
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(20, 99, 197, 0.08);
+    }
+    .step-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--fs-base);
+      margin: 0 auto var(--space-3);
+    }
+    .redeem-step-card h3 {
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-1);
+    }
+    .redeem-step-card p {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Floating Cart Summary Bar */
+    .cart-summary-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 990;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(20, 99, 197, 0.15);
+      box-shadow: 0 -8px 32px rgba(20, 70, 130, 0.15);
+      padding: var(--space-3) 0;
+      transform: translateY(110%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cart-summary-bar.visible {
+      transform: translateY(0);
+    }
+    .cart-summary-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .cart-summary-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .cart-icon-badge {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cart-icon-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--danger);
+      color: var(--white);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      border: 2px solid var(--white);
+    }
+    .cart-summary-text h4 {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .cart-summary-text p {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+
+    /* Skeleton Loading */
+    .skeleton-offer {
+      height: 280px;
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+    }
+
+    @media (max-width: 768px) {
+      .redeem-steps {
+        grid-template-columns: 1fr;
+      }
+      .coupon-card {
+        padding: var(--space-4);
+      }
+      .cart-summary-inner {
+        flex-direction: row;
+        gap: var(--space-2);
+      }
+      .cart-summary-text p {
+        display: none;
+      }
+      .code-display-wrap {
+        flex-wrap: wrap;
+      }
+      .btn-copy-code {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <div class="container">
+
+      <!-- Header Section -->
+      <section class="offers-header fade-in">
+        <span class="badge badge-yellow" style="margin-bottom: var(--space-2);">
+          Exclusive Savings
+        </span>
+        <h1>Current Lab Test Offers &amp; Coupons</h1>
+        <p>Save on your diagnostic tests and preventive checkup bookings. Copy any valid coupon code below and apply it during checkout.</p>
+      </section>
+
+      <!-- Offers Grid / Loading / Empty -->
+      <section id="offers-section" aria-live="polite">
+        <div class="offers-grid" id="offers-grid">
+          <!-- Skeletons rendered by default -->
+          <div class="glass-card-static skeleton-offer skeleton"></div>
+          <div class="glass-card-static skeleton-offer skeleton"></div>
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="offers-empty-state" class="glass-card empty-state" style="display: none;">
+          <div id="empty-offer-icon-slot"></div>
+          <h3 id="empty-title">No Active Offers Right Now</h3>
+          <p id="empty-desc">All current coupon campaigns have reached their limits. However, you can still save up to 40% every day by selecting our bundled health packages!</p>
+          <a href="/packages.html" class="btn btn-primary">
+            <span>Explore Health Packages</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- How to Redeem Section -->
+      <section class="glass-card-static how-to-redeem fade-in">
+        <div class="redeem-heading">
+          <h2>How to Redeem Your Coupon</h2>
+          <p style="color:var(--muted);font-size:var(--fs-sm);">Follow these 3 simple steps to get instant discounts on your booking</p>
+        </div>
+        <div class="redeem-steps">
+          <div class="redeem-step-card">
+            <div class="step-circle">1</div>
+            <h3>Copy Coupon Code</h3>
+            <p>Click "Copy Code" on any offer card above to copy it directly to your device clipboard.</p>
+          </div>
+          <div class="redeem-step-card">
+            <div class="step-circle">2</div>
+            <h3>Select Tests or Packages</h3>
+            <p>Add your prescribed tests or curated wellness packages to your booking cart.</p>
+          </div>
+          <div class="redeem-step-card">
+            <div class="step-circle">3</div>
+            <h3>Apply at Checkout</h3>
+            <p>Paste your promo code in Step 4 of the booking page to see immediate savings reflected on your total.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Floating Cart Summary Bar -->
+  <aside class="cart-summary-bar" id="floating-cart-bar" aria-label="Booking Cart Summary">
+    <div class="container">
+      <div class="cart-summary-inner">
+        <div class="cart-summary-info">
+          <div class="cart-icon-badge" id="cart-bar-icon-slot">
+            <span class="cart-icon-count" id="cart-bar-count">0</span>
+          </div>
+          <div class="cart-summary-text">
+            <h4><span id="cart-bar-items-label">0 items</span> &bull; <span id="cart-bar-total" style="color:var(--navy);font-weight:800;">₹0</span></h4>
+            <p>Proceed to booking to apply your promo code</p>
+          </div>
+        </div>
+        <div class="cart-summary-actions">
+          <a href="/booking.html" class="btn btn-primary" id="cart-bar-checkout-btn">
+            <span>Proceed to Book</span>
+            <span id="cart-btn-arrow-slot"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="footer"></div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+
+  <script>
+    // Initialize Navbar & Footer
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('offers');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    // Rebind mobile menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.onclick = () => mobileMenu.classList.add('open');
+      if (mobileMenuClose) mobileMenuClose.onclick = () => mobileMenu.classList.remove('open');
+      mobileMenu.onclick = (e) => { if (e.target === mobileMenu) mobileMenu.classList.remove('open'); };
+    }
+
+    // Populate Icons
+    document.getElementById('empty-offer-icon-slot').innerHTML = Components.icon('tag');
+    document.getElementById('cart-bar-icon-slot').insertAdjacentHTML('afterbegin', Components.icon('tag'));
+    document.getElementById('cart-btn-arrow-slot').innerHTML = Components.icon('arrowRight');
+
+    // Demo Mode Detection
+    API.get('/settings/public').then(res => {
+      const env = res.environment || (res.settings && res.settings.environment);
+      if (env === 'demo') {
+        const b = document.getElementById('demo-banner-container');
+        if (b) b.innerHTML = '<div class="demo-banner">DEMO MODE — Sample data & simulated workflows active</div>';
+      }
+    }).catch(() => {});
+
+    // State Management
+    const state = {
+      offers: [],
+      cart: []
+    };
+
+    // Cart Management
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('rp_cart');
+        const parsed = raw ? JSON.parse(raw) : [];
+        state.cart = Array.isArray(parsed) ? parsed.filter(i => i && i.id && i.type) : [];
+      } catch (_) {
+        state.cart = [];
+      }
+    }
+
+    function updateFloatingCart() {
+      const bar = document.getElementById('floating-cart-bar');
+      const countEl = document.getElementById('cart-bar-count');
+      const itemsLabel = document.getElementById('cart-bar-items-label');
+      const totalEl = document.getElementById('cart-bar-total');
+
+      const totalItems = state.cart.length;
+      if (totalItems > 0) {
+        const totalPrice = state.cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        countEl.textContent = totalItems;
+        itemsLabel.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'} selected`;
+        totalEl.textContent = UI.formatCurrency(totalPrice);
+        bar.classList.add('visible');
+      } else {
+        bar.classList.remove('visible');
+      }
+    }
+
+    // Copy Code Helper
+    function copyCouponCode(code, btnEl) {
+      if (!navigator.clipboard) {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      } else {
+        navigator.clipboard.writeText(code);
+      }
+
+      UI.toast(`Coupon code "${code}" copied to clipboard!`, 'success');
+
+      if (btnEl) {
+        const originalHtml = btnEl.innerHTML;
+        btnEl.innerHTML = `${Components.icon('check')} <span>Copied!</span>`;
+        btnEl.classList.remove('btn-primary');
+        btnEl.classList.add('btn-success');
+        setTimeout(() => {
+          btnEl.innerHTML = originalHtml;
+          btnEl.classList.remove('btn-success');
+          btnEl.classList.add('btn-primary');
+        }, 2200);
+      }
+    }
+
+    // Render Offers
+    function renderOffers() {
+      const grid = document.getElementById('offers-grid');
+      const emptyState = document.getElementById('offers-empty-state');
+
+      if (!state.offers || state.offers.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = state.offers.map(offer => {
+        const code = offer.code || '';
+        const title = offer.title || offer.name || 'Special Discount';
+        const description = offer.description || 'Valid on diagnostic tests and health checkups.';
+
+        const discountType = offer.discountType || offer.discount_type || 'percentage';
+        const discountVal = Number(offer.discountValue ?? offer.discount_value ?? 0);
+        const minOrder = Number(offer.minOrderAmount ?? offer.min_order_amount ?? 0);
+        const maxDiscount = Number(offer.maxDiscount ?? offer.max_discount_amount ?? 0);
+        const validUntil = offer.validTo || offer.valid_until || offer.validUntil;
+
+        const isPercentage = discountType === 'percentage';
+        const discountDisplay = isPercentage ? `${discountVal}% OFF` : `₹${discountVal} OFF`;
+
+        return `
+          <article class="glass-card coupon-card fade-in" data-offer-code="${UI.escapeHtml(code)}">
+            <div class="coupon-ribbon"></div>
+
+            <div>
+              <div class="coupon-header">
+                <div>
+                  <div class="discount-figure">${discountDisplay}</div>
+                  <div class="discount-label">Verified Coupon</div>
+                </div>
+                <span class="badge badge-yellow">
+                  ${Components.icon('tag')}
+                  <span>Active Offer</span>
+                </span>
+              </div>
+
+              <h2 class="coupon-title">${UI.escapeHtml(title)}</h2>
+              <p class="coupon-desc">${UI.escapeHtml(description)}</p>
+
+              <div class="coupon-rules">
+                <div class="rule-item">
+                  ${Components.icon('check')}
+                  <span>Minimum Order: <strong>${minOrder > 0 ? UI.formatCurrency(minOrder) : 'No minimum'}</strong></span>
+                </div>
+                ${maxDiscount > 0 ? `
+                  <div class="rule-item">
+                    ${Components.icon('shield')}
+                    <span>Maximum Discount Capped at: <strong>${UI.formatCurrency(maxDiscount)}</strong></span>
+                  </div>
+                ` : ''}
+                <div class="rule-item">
+                  ${Components.icon('calendar')}
+                  <span>Valid Until: <strong>${validUntil ? UI.formatDate(validUntil) : 'Ongoing'}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="coupon-action-box">
+              <div class="code-display-wrap">
+                <span class="coupon-code-text">${UI.escapeHtml(code)}</span>
+                <button type="button" class="btn btn-primary btn-sm btn-copy-code" data-code="${UI.escapeHtml(code)}" aria-label="Copy code ${UI.escapeHtml(code)}">
+                  ${Components.icon('clipboard')}
+                  <span>Copy Code</span>
+                </button>
+              </div>
+
+              <div class="checkout-instruction">
+                <span>
+                  ${Components.icon('check')}
+                  <span>Apply at Checkout</span>
+                </span>
+                <a href="/booking.html">Book Test &rarr;</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Attach copy button listeners
+      grid.querySelectorAll('.btn-copy-code').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const code = btn.dataset.code;
+          copyCouponCode(code, btn);
+        });
+      });
+    }
+
+    // Initial Fetch & Boot
+    async function init() {
+      loadCart();
+      updateFloatingCart();
+
+      try {
+        // Try active offers endpoint, fall back to general offers endpoint if needed
+        let res;
+        try {
+          res = await API.get('/offers/active');
+        } catch (_) {
+          res = await API.get('/offers');
+        }
+
+        const list = Array.isArray(res) ? res : (res.offers || []);
+        state.offers = list;
+        renderOffers();
+
+      } catch (err) {
+        const grid = document.getElementById('offers-grid');
+        grid.style.display = 'none';
+        const emptyState = document.getElementById('offers-empty-state');
+        emptyState.style.display = 'block';
+        document.getElementById('empty-title').textContent = 'Offers Currently Unavailable';
+        document.getElementById('empty-desc').textContent = 'We could not fetch active coupons at this time. Please check your network connection or explore our health packages.';
+        UI.toast('Could not load offers', 'error');
+      }
+    }
+
+    // Run on script load
+    init();
+  </script>
+</body>
+</html>

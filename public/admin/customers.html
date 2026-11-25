@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customers — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field" style="flex:2;min-width:240px">
+              <label for="cust-search">Search Customers</label>
+              <input type="text" id="cust-search" class="form-input" placeholder="Search by patient name, phone, or email...">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="cust-search-btn">Search</button>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">Registered Patients <span id="cust-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>City / Pincode</th>
+                  <th>Bookings</th>
+                  <th>Registered</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cust-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Loading customers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="cust-cards"></div>
+          <div class="pagination" id="cust-pagination"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Customer Detail Drawer -->
+  <div class="drawer-overlay" id="cust-drawer">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div>
+          <h2 class="modal-title" id="cd-name">Customer Details</h2>
+          <p id="cd-sub" style="font-size:var(--fs-xs);color:var(--muted)"></p>
+        </div>
+        <button class="modal-close" id="cd-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="drawer-body" id="cd-body"></div>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let currentPage = 1;
+
+      async function loadCustomers(page = 1) {
+        currentPage = page;
+        const q = document.getElementById('cust-search').value.trim();
+        const params = new URLSearchParams({ page: String(page), limit: '20' });
+        if (q) params.set('search', q);
+
+        try {
+          const res = await API.get(`/admin/customers?${params.toString()}`);
+          const list = AdminCommon.unwrapList(res, ['customers', 'data', 'items']);
+          const total = res.total ?? res.pagination?.total ?? list.length;
+          const totalPages = res.total_pages ?? res.totalPages ?? res.pagination?.totalPages ?? 1;
+          document.getElementById('cust-count').textContent = String(total);
+          renderCustomers(list);
+          AdminCommon.renderPagination('cust-pagination', currentPage, totalPages, loadCustomers);
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load customers', 'error');
+        }
+      }
+
+      function renderCustomers(list) {
+        const tbody = document.getElementById('cust-tbody');
+        const cards = document.getElementById('cust-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('users', 'No customers found', 'Customer profiles are created automatically when bookings are submitted.');
+          tbody.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => `
+          <tr>
+            <td>
+              <div style="font-weight:700;color:var(--navy)">${UI.escapeHtml(c.full_name || c.name || '—')}</div>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(c.email || '')}</div>
+            </td>
+            <td>${UI.escapeHtml(c.phone || '—')}</td>
+            <td>${UI.escapeHtml([c.city, c.pincode].filter(Boolean).join(' - ') || '—')}</td>
+            <td><span class="badge badge-blue">${c.booking_count ?? c.total_bookings ?? 0}</span></td>
+            <td>${UI.formatDate(c.created_at)}</td>
+            <td><button class="btn btn-secondary btn-sm view-cust-btn" data-id="${c.id}">View History</button></td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(c => `
+          <div class="data-card">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(c.full_name || c.name || '—')}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(c.phone || '—')}</div>
+              </div>
+              <span class="badge badge-blue">${c.booking_count ?? c.total_bookings ?? 0} bookings</span>
+            </div>
+            <div class="data-card-meta">
+              <div>Location<strong>${UI.escapeHtml(c.city || '—')}</strong></div>
+              <div>Joined<strong>${UI.formatDate(c.created_at)}</strong></div>
+            </div>
+            <div class="data-card-actions">
+              <button class="btn btn-primary btn-sm view-cust-btn" data-id="${c.id}">View Details</button>
+            </div>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.view-cust-btn').forEach(btn => {
+          btn.addEventListener('click', () => openCustomerDetail(btn.dataset.id));
+        });
+      }
+
+      async function openCustomerDetail(id) {
+        const drawer = document.getElementById('cust-drawer');
+        const body = document.getElementById('cd-body');
+        drawer.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        body.innerHTML = '<div class="spinner" style="margin-top:3rem"></div>';
+
+        try {
+          const data = await API.get(`/admin/customers/${id}`);
+          const c = data.customer || data;
+          const bookings = AdminCommon.unwrapList(data.bookings, ['bookings', 'data']);
+          const payments = AdminCommon.unwrapList(data.payments, ['payments', 'data']);
+          const reports = AdminCommon.unwrapList(data.reports, ['reports', 'data']);
+
+          document.getElementById('cd-name').textContent = c.full_name || c.name || 'Customer';
+          document.getElementById('cd-sub').textContent = `Phone: ${c.phone || '—'} · Member since ${UI.formatDate(c.created_at)}`;
+
+          body.innerHTML = `
+            <div class="detail-section">
+              <div class="detail-section-title">Profile</div>
+              <div class="detail-kv-grid">
+                <div><div class="detail-kv-label">Phone</div><div class="detail-kv-val">${UI.escapeHtml(c.phone || '—')}</div></div>
+                <div><div class="detail-kv-label">Email</div><div class="detail-kv-val">${UI.escapeHtml(c.email || '—')}</div></div>
+                <div><div class="detail-kv-label">Gender</div><div class="detail-kv-val">${UI.escapeHtml(c.gender || '—')}</div></div>
+                <div><div class="detail-kv-label">City / Pincode</div><div class="detail-kv-val">${UI.escapeHtml([c.city, c.pincode].filter(Boolean).join(' - ') || '—')}</div></div>
+                <div style="grid-column:1/-1"><div class="detail-kv-label">Address</div><div class="detail-kv-val">${UI.escapeHtml(c.address || '—')}</div></div>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <div class="detail-section-title">Booking History (${bookings.length})</div>
+              ${bookings.length ? bookings.map(b => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-sm)">
+                  <div>
+                    <a href="/admin/bookings.html?id=${encodeURIComponent(b.id)}" style="font-weight:700">${UI.escapeHtml(b.booking_id || String(b.id))}</a>
+                    <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.formatDate(b.appointment_date)} · ${UI.escapeHtml(b.branch_name || '')}</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div><strong>${UI.formatCurrency(b.total_amount || 0)}</strong></div>
+                    ${AdminCommon.statusBadge(b.booking_status || b.status)}
+                  </div>
+                </div>
+              `).join('') : '<p style="font-size:var(--fs-sm);color:var(--muted)">No bookings found.</p>'}
+            </div>
+
+            <div class="detail-section">
+              <div class="detail-section-title">Payment History (${payments.length})</div>
+              ${payments.length ? payments.map(p => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-sm)">
+                  <div>
+                    <strong>${UI.escapeHtml(p.payment_ref || 'Payment')}</strong>
+                    <div style="font-size:var(--fs-xs);color:var(--muted)">${p.utr_number ? `UTR: ${UI.escapeHtml(p.utr_number)}` : UI.formatDateTime(p.created_at)}</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div><strong>${UI.formatCurrency(p.amount || 0)}</strong></div>
+                    ${AdminCommon.paymentBadge(p.payment_status)}
+                  </div>
+                </div>
+              `).join('') : '<p style="font-size:var(--fs-sm);color:var(--muted)">No payment records.</p>'}
+            </div>
+
+            <div class="detail-section">
+              <div class="detail-section-title">Reports (${reports.length})</div>
+              ${reports.length ? reports.map(r => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-sm)">
+                  <div>
+                    <strong>${UI.escapeHtml(r.title || r.file_name)}</strong>
+                    <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.formatDateTime(r.created_at)}</div>
+                  </div>
+                  <span class="badge ${r.is_available ? 'badge-green' : 'badge-gray'}">${r.is_available ? 'Available' : 'Hidden'}</span>
+                </div>
+              `).join('') : '<p style="font-size:var(--fs-sm);color:var(--muted)">No medical reports.</p>'}
+            </div>
+          `;
+        } catch (err) {
+          body.innerHTML = AdminCommon.emptyStateHTML('user', 'Failed to load customer', err.message || 'Could not retrieve details');
+        }
+      }
+
+      function closeDrawer() {
+        document.getElementById('cust-drawer').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'customers',
+          title: 'Customers',
+          subtitle: 'View registered patients, booking history, payments, and reports',
+        });
+
+        document.getElementById('cd-close-btn').addEventListener('click', closeDrawer);
+        document.getElementById('cust-drawer').addEventListener('click', (e) => {
+          if (e.target.id === 'cust-drawer') closeDrawer();
+        });
+        document.getElementById('cust-search').addEventListener('input', UI.debounce(() => loadCustomers(1), 350));
+        document.getElementById('cust-search-btn').addEventListener('click', () => loadCustomers(1));
+
+        await loadCustomers(1);
+      });
+    })();
+  </script>
+</body>
+</html>

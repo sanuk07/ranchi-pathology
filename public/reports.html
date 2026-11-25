@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download Diagnostic Reports — Ranchi Pathology</title>
+  <meta name="description" content="Access and download your verified medical laboratory test reports securely online using your booking ID and mobile number or tracking token with Ranchi Pathology.">
+  <meta property="og:title" content="Download Diagnostic Reports — Ranchi Pathology">
+  <meta property="og:description" content="Secure, authenticated online access to diagnostic and pathology reports with Ranchi Pathology.">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content {
+      padding-top: 88px;
+      padding-bottom: var(--space-12);
+      min-height: calc(100vh - 300px);
+    }
+
+    .reports-hero {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-6);
+    }
+    .reports-hero h1 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .reports-hero p {
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto;
+      font-size: var(--fs-base);
+    }
+
+    /* Verification Card */
+    .verify-card {
+      max-width: 640px;
+      margin: 0 auto var(--space-8);
+      background: var(--glass-bg-strong);
+    }
+
+    .tabs-wrapper {
+      margin-bottom: var(--space-6);
+    }
+    .tabs-wrapper .tabs {
+      display: flex;
+      justify-content: stretch;
+      width: 100%;
+      background: rgba(20,99,197,0.06);
+    }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      white-space: normal;
+      line-height: 1.25;
+      min-width: 0;
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Security Notice Banner */
+    .security-notice {
+      background: rgba(20,99,197,0.05);
+      border: 1px solid rgba(20,99,197,0.15);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-top: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--fs-xs);
+      color: var(--navy);
+    }
+    .security-notice .icon-slot {
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+
+    /* Reports Result Container */
+    #reports-result {
+      display: none;
+    }
+    #reports-result.active {
+      display: block;
+    }
+
+    .patient-header-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      padding: var(--space-5) var(--space-6);
+      background: var(--glass-bg-strong);
+      margin-bottom: var(--space-6);
+    }
+    .patient-title {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .patient-meta {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin-top: 2px;
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    /* Report Card Grid */
+    .reports-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .report-card {
+      background: var(--glass-bg);
+      border: var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      transition: var(--transition);
+      box-shadow: var(--glass-shadow);
+    }
+    .report-card:hover {
+      background: var(--white-glass-hover);
+      box-shadow: var(--glass-shadow-lg);
+      transform: translateY(-1px);
+    }
+
+    .report-main-info {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      flex: 1;
+      min-width: 0;
+    }
+    .report-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: rgba(20,99,197,0.1);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .report-icon-box.ready {
+      background: rgba(16,185,129,0.1);
+      color: var(--success);
+    }
+
+    .report-title-text {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+    .report-sub-meta {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    .report-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    /* Privacy Guarantees */
+    .security-guarantees-card {
+      margin-top: var(--space-8);
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(20,99,197,0.1);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+      margin-top: var(--space-4);
+    }
+    .security-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+    .security-feature .icon-box {
+      color: var(--blue);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .security-feature h5 {
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+    .security-feature p {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .security-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+      }
+      .report-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .report-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+      .report-actions .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <div class="container">
+
+      <!-- Page Hero -->
+      <header class="reports-hero">
+        <span class="badge badge-blue" style="margin-bottom:var(--space-2);">
+          <span class="icon-slot" data-icon="shield"></span>
+          <span style="margin-left:4px;">Secure Patient Health Portal</span>
+        </span>
+        <h1>Download Medical Reports</h1>
+        <p>Access your diagnostic pathology test reports securely online using your verified booking details.</p>
+      </header>
+
+      <!-- Verification Card with 2 Tabs -->
+      <section class="glass-card-static verify-card" aria-label="Identity Verification">
+        
+        <!-- Tab Navigation -->
+        <div class="tabs-wrapper">
+          <div class="tabs" role="tablist">
+            <button
+              type="button"
+              class="tab-btn active"
+              id="tab-btn-id"
+              role="tab"
+              aria-selected="true"
+              aria-controls="tab-pane-id"
+            >
+              <span class="icon-slot" data-icon="userCheck"></span>
+              <span>Booking ID &amp; Phone</span>
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              id="tab-btn-token"
+              role="tab"
+              aria-selected="false"
+              aria-controls="tab-pane-token"
+            >
+              <span class="icon-slot" data-icon="tag"></span>
+              <span>Tracking Token</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab 1: Booking ID + Phone Number -->
+        <div class="tab-content active" id="tab-pane-id" role="tabpanel" aria-labelledby="tab-btn-id">
+          <form id="form-verify-id" onsubmit="return false;">
+            <div class="form-group">
+              <label for="input-booking-id" class="form-label">Booking Reference ID</label>
+              <input
+                type="text"
+                id="input-booking-id"
+                class="form-input"
+                placeholder="e.g. RP-202611-0042"
+                required
+                autocomplete="off"
+              >
+              <div class="form-hint">Found on your appointment SMS or billing receipt.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-patient-phone" class="form-label">Registered Mobile Number</label>
+              <input
+                type="tel"
+                id="input-patient-phone"
+                class="form-input"
+                placeholder="10-digit mobile number (e.g. 9876543210)"
+                maxlength="10"
+                required
+                autocomplete="tel"
+              >
+              <div class="form-hint">Mobile number used during test registration.</div>
+            </div>
+
+            <button type="submit" id="btn-verify-id" class="btn btn-primary btn-block">
+              <span class="icon-slot" data-icon="shield"></span>
+              <span>Verify &amp; View Reports</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Tab 2: Direct Tracking Token -->
+        <div class="tab-content" id="tab-pane-token" role="tabpanel" aria-labelledby="tab-btn-token">
+          <form id="form-verify-token" onsubmit="return false;">
+            <div class="form-group">
+              <label for="input-tracking-token" class="form-label">Enter Tracking Token</label>
+              <input
+                type="text"
+                id="input-tracking-token"
+                class="form-input"
+                placeholder="e.g. RP-TRK-7A8B9C"
+                required
+                autocomplete="off"
+              >
+              <div class="form-hint">Your confidential access token received on WhatsApp or SMS.</div>
+            </div>
+
+            <button type="submit" id="btn-verify-token" class="btn btn-primary btn-block">
+              <span class="icon-slot" data-icon="search"></span>
+              <span>Verify Token &amp; Access</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Mandatory Security Reassurance Notice -->
+        <div class="security-notice">
+          <span class="icon-slot" data-icon="shield"></span>
+          <span><strong>Security Notice:</strong> Your reports are secured. We verify your identity before providing access.</span>
+        </div>
+
+      </section>
+
+      <!-- Loading Placeholder -->
+      <div id="loading-state" style="display:none; text-align:center; padding:var(--space-12) 0;">
+        <div class="spinner"></div>
+        <p style="margin-top:var(--space-4); color:var(--muted); font-size:var(--fs-sm);">Verifying authentication and fetching reports...</p>
+      </div>
+
+      <!-- Empty / Error Notification State -->
+      <section id="error-state" class="glass-card-static empty-state" style="display:none; max-width:640px; margin:0 auto var(--space-8);">
+        <div class="icon-slot" data-icon="shield" style="color:var(--danger);"></div>
+        <h3 id="error-title">Verification Failed</h3>
+        <p id="error-message">The information entered does not match our patient records. Please check the Booking ID and phone number.</p>
+        <div style="display:flex; justify-content:center; gap:var(--space-3); flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="resetFormFocus();">
+            <span class="icon-slot" data-icon="refresh"></span>
+            <span>Try Again</span>
+          </button>
+          <a href="/track-booking.html" class="btn btn-secondary btn-sm">
+            <span class="icon-slot" data-icon="activity"></span>
+            <span>Check Booking Status</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Verified Reports Container -->
+      <section id="reports-result" class="fade-in" aria-live="polite">
+        
+        <!-- Patient & Session Bar -->
+        <div class="patient-header-card glass-card-static">
+          <div>
+            <div class="patient-title">
+              <span class="icon-slot" data-icon="userCheck" style="color:var(--success);"></span>
+              <span id="patient-name-display">Patient Name</span>
+            </div>
+            <div class="patient-meta">
+              <span id="booking-id-display">Booking ID: —</span>
+              <span>•</span>
+              <span id="booking-date-display">Date: —</span>
+              <span>•</span>
+              <span id="branch-display">Branch: —</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:var(--space-2);">
+            <span id="overall-status-badge" class="badge badge-green">Verified Access</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="clearSession();">
+              <span class="icon-slot" data-icon="logout"></span>
+              <span>Clear Session</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Available Reports Section -->
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
+            <h3 style="font-size:var(--fs-lg); font-weight:700; color:var(--navy); margin:0; display:flex; align-items:center; gap:var(--space-2);">
+              <span class="icon-slot" data-icon="fileText"></span>
+              <span>Available Diagnostic Reports</span>
+            </h3>
+            <span id="report-count-badge" class="badge badge-blue">0 Reports</span>
+          </div>
+
+          <!-- Reports List Container -->
+          <div class="reports-grid" id="reports-container">
+            <!-- Dynamically populated report cards -->
+          </div>
+
+          <!-- When verified, but no reports ready yet -->
+          <div id="no-reports-yet" class="glass-card-static empty-state" style="display:none;">
+            <div class="icon-slot" data-icon="clock" style="color:var(--warning);"></div>
+            <h3>Reports Are Under Preparation</h3>
+            <p>Your sample has been collected and is currently being analyzed in our laboratory. Once certified by our chief pathologist, your report will be immediately downloadable here.</p>
+            <div style="display:flex; justify-content:center; gap:var(--space-3);">
+              <a href="/track-booking.html" id="link-track-live" class="btn btn-primary btn-sm">
+                <span class="icon-slot" data-icon="activity"></span>
+                <span>Track Lab Progress</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Trust & Privacy Guarantees -->
+      <section class="security-guarantees-card" aria-label="Security and Privacy Details">
+        <h4 style="font-size:var(--fs-base); font-weight:700; color:var(--navy); margin-bottom:var(--space-1); display:flex; align-items:center; gap:var(--space-2);">
+          <span class="icon-slot" data-icon="shield"></span>
+          <span>Patient Privacy &amp; Data Protection</span>
+        </h4>
+        <p style="font-size:var(--fs-xs); color:var(--muted); margin:0;">Ranchi Pathology adheres to strict patient confidentiality standards and regulatory healthcare data compliance.</p>
+
+        <div class="security-grid">
+          <div class="security-feature">
+            <div class="icon-box icon-slot" data-icon="shield"></div>
+            <div>
+              <h5>Two-Factor Access</h5>
+              <p>Reports are strictly protected behind verified booking reference and registered mobile authentication.</p>
+            </div>
+          </div>
+          <div class="security-feature">
+            <div class="icon-box icon-slot" data-icon="check"></div>
+            <div>
+              <h5>Digitally Signed</h5>
+              <p>Every report includes tamper-evident digital signatures and QR verification for official authenticity.</p>
+            </div>
+          </div>
+          <div class="security-feature">
+            <div class="icon-box icon-slot" data-icon="clock"></div>
+            <div>
+              <h5>24/7 Lifetime Access</h5>
+              <p>Re-download past diagnostic records any time free of charge for doctor consultations and health history.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <!-- Shared Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+
+  <script>
+    // ─── Initialize Shared Layout Components ───
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('reports');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    function renderIcons(container = document) {
+      container.querySelectorAll('.icon-slot').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        if (name && !el.hasChildNodes()) {
+          el.innerHTML = Components.icon(name);
+        }
+      });
+    }
+    renderIcons();
+
+    // ─── Check Demo Mode Banner ───
+    (async function checkDemoBanner() {
+      try {
+        const res = await API.get('/settings/public');
+        const env = res.environment || res.settings?.environment;
+        if (env === 'demo') {
+          const banner = document.getElementById('demo-banner-container');
+          if (banner) {
+            banner.innerHTML = '<div class="demo-banner">DEMO MODE — Sample data &amp; simulated workflows active</div>';
+          }
+        }
+      } catch (_) {}
+    })();
+
+    // ─── DOM References ───
+    const tabBtnId = document.getElementById('tab-btn-id');
+    const tabBtnToken = document.getElementById('tab-btn-token');
+    const tabPaneId = document.getElementById('tab-pane-id');
+    const tabPaneToken = document.getElementById('tab-pane-token');
+
+    const formVerifyId = document.getElementById('form-verify-id');
+    const formVerifyToken = document.getElementById('form-verify-token');
+    const inputBookingId = document.getElementById('input-booking-id');
+    const inputPatientPhone = document.getElementById('input-patient-phone');
+    const inputTrackingToken = document.getElementById('input-tracking-token');
+
+    const btnVerifyId = document.getElementById('btn-verify-id');
+    const btnVerifyToken = document.getElementById('btn-verify-token');
+
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const reportsResult = document.getElementById('reports-result');
+    const reportsContainer = document.getElementById('reports-container');
+    const noReportsYet = document.getElementById('no-reports-yet');
+
+    let currentActiveToken = null;
+
+    // ─── Tab Switching ───
+    tabBtnId.addEventListener('click', () => switchTab('id'));
+    tabBtnToken.addEventListener('click', () => switchTab('token'));
+
+    function switchTab(type) {
+      if (type === 'id') {
+        tabBtnId.classList.add('active');
+        tabBtnId.setAttribute('aria-selected', 'true');
+        tabBtnToken.classList.remove('active');
+        tabBtnToken.setAttribute('aria-selected', 'false');
+
+        tabPaneId.classList.add('active');
+        tabPaneToken.classList.remove('active');
+        inputBookingId.focus();
+      } else {
+        tabBtnToken.classList.add('active');
+        tabBtnToken.setAttribute('aria-selected', 'true');
+        tabBtnId.classList.remove('active');
+        tabBtnId.setAttribute('aria-selected', 'false');
+
+        tabPaneToken.classList.add('active');
+        tabPaneId.classList.remove('active');
+        inputTrackingToken.focus();
+      }
+      errorState.style.display = 'none';
+    }
+
+    function resetFormFocus() {
+      errorState.style.display = 'none';
+      if (tabBtnId.classList.contains('active')) {
+        inputBookingId.focus();
+      } else {
+        inputTrackingToken.focus();
+      }
+    }
+
+    function clearSession() {
+      currentActiveToken = null;
+      reportsResult.classList.remove('active');
+      inputBookingId.value = '';
+      inputPatientPhone.value = '';
+      inputTrackingToken.value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      resetFormFocus();
+    }
+
+    // ─── Verification Handlers ───
+
+    // Option 1: Booking ID + Phone
+    formVerifyId.addEventListener('submit', async () => {
+      const bId = inputBookingId.value.trim().toUpperCase();
+      const phone = inputPatientPhone.value.trim();
+
+      if (!bId) {
+        UI.toast('Please enter your Booking ID', 'warning');
+        inputBookingId.focus();
+        return;
+      }
+
+      if (!UI.validatePhone(phone)) {
+        UI.toast('Please enter a valid 10-digit mobile number', 'warning');
+        inputPatientPhone.focus();
+        return;
+      }
+
+      await executeVerificationById(bId, phone);
+    });
+
+    // Option 2: Tracking Token
+    formVerifyToken.addEventListener('submit', async () => {
+      const token = inputTrackingToken.value.trim();
+      if (!token) {
+        UI.toast('Please enter your tracking token', 'warning');
+        inputTrackingToken.focus();
+        return;
+      }
+
+      await executeVerificationByToken(token);
+    });
+
+    // ─── Query Param Autoload ───
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const paramToken = params.get('token');
+      const paramBookingId = params.get('bookingId') || params.get('booking_id') || params.get('id');
+      const paramPhone = params.get('phone');
+
+      if (paramToken) {
+        switchTab('token');
+        inputTrackingToken.value = paramToken;
+        executeVerificationByToken(paramToken);
+      } else if (paramBookingId && paramPhone) {
+        switchTab('id');
+        inputBookingId.value = paramBookingId;
+        inputPatientPhone.value = paramPhone;
+        executeVerificationById(paramBookingId, paramPhone);
+      } else if (paramBookingId) {
+        switchTab('id');
+        inputBookingId.value = paramBookingId;
+        inputPatientPhone.focus();
+      }
+    });
+
+    // ─── Execute Verification API Calls ───
+
+    async function executeVerificationById(bookingId, phone) {
+      errorState.style.display = 'none';
+      reportsResult.classList.remove('active');
+      loadingState.style.display = 'block';
+      UI.setButtonLoading(btnVerifyId, true);
+
+      try {
+        const res = await API.post('/reports/verify', { bookingId, phone });
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(btnVerifyId, false);
+
+        currentActiveToken = res.tracking_token || res.trackingToken || (res.booking && res.booking.tracking_token) || '';
+        renderVerifiedReports(res);
+        UI.toast('Identity verified successfully!', 'success');
+      } catch (err) {
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(btnVerifyId, false);
+        const errMsg = err.message || 'No matching booking found for this ID and phone number.';
+        showError('Verification Failed', errMsg);
+        UI.toast(errMsg, 'error');
+      }
+    }
+
+    async function executeVerificationByToken(token) {
+      errorState.style.display = 'none';
+      reportsResult.classList.remove('active');
+      loadingState.style.display = 'block';
+      UI.setButtonLoading(btnVerifyToken, true);
+
+      try {
+        const res = await API.get('/bookings/track/' + encodeURIComponent(token));
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(btnVerifyToken, false);
+
+        currentActiveToken = token;
+        renderVerifiedReports(res);
+        UI.toast('Token validated successfully!', 'success');
+      } catch (err) {
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(btnVerifyToken, false);
+        const errMsg = err.message || 'Invalid or expired tracking token.';
+        showError('Invalid Token', errMsg);
+        UI.toast(errMsg, 'error');
+      }
+    }
+
+    function showError(title, message) {
+      reportsResult.classList.remove('active');
+      document.getElementById('error-title').textContent = title;
+      document.getElementById('error-message').textContent = message;
+      errorState.style.display = 'block';
+      renderIcons(errorState);
+    }
+
+    // ─── Render Report Cards ───
+
+    function renderVerifiedReports(data) {
+      const booking = data.booking || data;
+      const reports = data.reports || booking.reports || [];
+      const branch = data.branch || booking.branch || {};
+      const token = currentActiveToken || booking.tracking_token || '';
+
+      // Update Patient & Booking Header Info
+      document.getElementById('patient-name-display').textContent = booking.patient_name || 'Patient Report';
+      document.getElementById('booking-id-display').textContent = 'Booking: ' + (booking.booking_id || booking.id || 'N/A');
+      document.getElementById('booking-date-display').textContent = 'Date: ' + (UI.formatDate(booking.appointment_date || booking.created_at) || 'Recent');
+      document.getElementById('branch-display').textContent = 'Branch: ' + (branch.name || booking.branch_name || 'Ranchi Lab');
+
+      // Link to tracking page
+      const trackLink = document.getElementById('link-track-live');
+      if (trackLink && token) {
+        trackLink.href = `/track-booking.html?token=${encodeURIComponent(token)}`;
+      }
+
+      // Check report list
+      reportsContainer.innerHTML = '';
+
+      // If no separate reports array exists, but top-level reportUrl exists or booking has completed report
+      let allReports = [...reports];
+      if (allReports.length === 0 && (data.reportUrl || booking.report_status === 'ready' || booking.booking_status === 'completed')) {
+        allReports.push({
+          id: booking.id || 1,
+          title: 'Official Diagnostic Pathology Report',
+          created_at: booking.updated_at || booking.created_at,
+          is_available: 1,
+          file_name: 'Pathology-Report.pdf',
+          file_size: null,
+          download_url: data.reportUrl || `/api/reports/${booking.id || 1}/download?token=${encodeURIComponent(token)}`
+        });
+      }
+
+      document.getElementById('report-count-badge').textContent = `${allReports.length} ${allReports.length === 1 ? 'Report' : 'Reports'}`;
+
+      if (allReports.length === 0) {
+        noReportsYet.style.display = 'block';
+        reportsContainer.style.display = 'none';
+      } else {
+        noReportsYet.style.display = 'none';
+        reportsContainer.style.display = 'grid';
+
+        allReports.forEach((rpt, idx) => {
+          const card = document.createElement('div');
+          card.className = 'report-card';
+
+          const isAvailable = rpt.is_available == 1 || rpt.isAvailable || (!('is_available' in rpt) && (booking.report_status === 'ready' || booking.booking_status === 'completed'));
+          const rptId = rpt.id || (idx + 1);
+          const downloadUrl = rpt.download_url || rpt.downloadUrl || `/api/reports/${rptId}/download?token=${encodeURIComponent(token)}`;
+          const sizeStr = rpt.file_size ? `${Math.round(rpt.file_size / 1024)} KB` : 'PDF Document';
+          const rptDate = UI.formatDate(rpt.created_at || rpt.updated_at || booking.created_at);
+
+          card.innerHTML = `
+            <div class="report-main-info">
+              <div class="report-icon-box ${isAvailable ? 'ready' : ''} icon-slot" data-icon="fileText"></div>
+              <div>
+                <div class="report-title-text">${UI.escapeHtml(rpt.title || rpt.name || 'Laboratory Diagnostic Report')}</div>
+                <div class="report-sub-meta">
+                  <span><span class="icon-slot" data-icon="calendar"></span> ${rptDate}</span>
+                  <span>•</span>
+                  <span><span class="icon-slot" data-icon="fileText"></span> ${sizeStr}</span>
+                  <span>•</span>
+                  <span class="badge ${isAvailable ? 'badge-green' : 'badge-yellow'}">
+                    ${isAvailable ? 'Ready for Download' : 'Under Verification'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="report-actions">
+              ${isAvailable ? `
+                <a
+                  href="${downloadUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-success btn-sm"
+                  download
+                >
+                  <span class="icon-slot" data-icon="download"></span>
+                  <span>Download Report</span>
+                </a>
+              ` : `
+                <button type="button" class="btn btn-secondary btn-sm" disabled style="opacity:0.7;">
+                  <span class="icon-slot" data-icon="clock"></span>
+                  <span>Processing</span>
+                </button>
+              `}
+            </div>
+          `;
+          reportsContainer.appendChild(card);
+        });
+      }
+
+      // Show results and refresh icons
+      reportsResult.classList.add('active');
+      renderIcons(reportsResult);
+
+      // Smooth scroll down to reports
+      reportsResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>

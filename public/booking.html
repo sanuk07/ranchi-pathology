@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Diagnostic Test — Ranchi Pathology</title>
+  <meta name="description" content="Book diagnostic lab tests and health checkup packages online at Ranchi Pathology. Choose branch visit or home sample collection across Chandwa, Lohardaga, and Ranchi.">
+  <meta property="og:title" content="Book a Diagnostic Test — Ranchi Pathology">
+  <meta property="og:description" content="Easy multi-step online test booking with instant slot selection, coupon discounts, and home sample collection.">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content { padding-top: 84px; padding-bottom: var(--space-16); }
+    .booking-header {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-4);
+    }
+    .booking-header h1 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .booking-header p { color: var(--muted); font-size: var(--fs-sm); }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: var(--space-6);
+      align-items: start;
+      margin-top: var(--space-4);
+    }
+    .booking-layout > * { min-width: 0; }
+    @media (max-width: 960px) {
+      .booking-layout { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+    .step-heading {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-1);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .step-sub {
+      color: var(--muted);
+      font-size: var(--fs-sm);
+      margin-bottom: var(--space-6);
+    }
+
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(20,99,197,0.1);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+    }
+    .cart-item-info { flex: 1; min-width: 0; }
+    .cart-item-name {
+      font-weight: 600;
+      color: var(--navy);
+      font-size: var(--fs-sm);
+      word-break: break-word;
+    }
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(239,68,68,0.2);
+      background: rgba(239,68,68,0.06);
+      color: var(--danger);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+    .icon-btn:hover { background: var(--danger); color: var(--white); }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: var(--space-4);
+    }
+    .choice-card {
+      position: relative;
+      padding: var(--space-5);
+      background: rgba(255,255,255,0.6);
+      border: 2px solid rgba(20,99,197,0.12);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+    }
+    .choice-card:hover {
+      border-color: var(--sky);
+      background: rgba(255,255,255,0.85);
+      transform: translateY(-2px);
+    }
+    .choice-card.selected {
+      border-color: var(--blue);
+      background: rgba(20,99,197,0.07);
+      box-shadow: 0 8px 24px rgba(20,99,197,0.12);
+    }
+    .choice-card.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .choice-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: rgba(20,99,197,0.1);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-3);
+    }
+    .choice-card.selected .choice-icon {
+      background: var(--blue);
+      color: var(--white);
+    }
+    .choice-title {
+      font-weight: 700;
+      color: var(--navy);
+      font-size: var(--fs-base);
+      margin-bottom: var(--space-1);
+    }
+    .choice-desc {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .quick-dates {
+      display: flex;
+      gap: var(--space-2);
+      overflow-x: auto;
+      padding-bottom: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .date-pill {
+      min-width: 72px;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(20,99,197,0.14);
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .date-pill:hover { border-color: var(--blue); }
+    .date-pill.selected {
+      background: var(--blue);
+      color: var(--white);
+      border-color: var(--blue);
+    }
+    .date-pill.holiday {
+      opacity: 0.45;
+      background: rgba(239,68,68,0.06);
+      border-color: rgba(239,68,68,0.2);
+      cursor: not-allowed;
+    }
+    .date-pill .dp-day { font-size: var(--fs-xs); opacity: 0.8; display: block; }
+    .date-pill .dp-num { font-size: var(--fs-sm); font-weight: 700; display: block; }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-3);
+    }
+    .slot-btn {
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(20,99,197,0.15);
+      text-align: center;
+      transition: var(--transition-fast);
+      color: var(--dark-text);
+    }
+    .slot-btn:hover:not(:disabled) {
+      border-color: var(--blue);
+      background: rgba(20,99,197,0.05);
+    }
+    .slot-btn.selected {
+      background: var(--blue);
+      color: var(--white);
+      border-color: var(--blue);
+      box-shadow: 0 4px 12px rgba(20,99,197,0.25);
+    }
+    .slot-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: rgba(100,116,139,0.08);
+    }
+    .slot-time { font-weight: 600; font-size: var(--fs-sm); display: block; }
+    .slot-cap { font-size: var(--fs-xs); opacity: 0.78; margin-top: 2px; display: block; }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+    @media (max-width: 600px) {
+      .form-row-2 { grid-template-columns: 1fr; gap: 0; }
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-2) 0;
+      font-size: var(--fs-sm);
+    }
+    .summary-divider {
+      border: none;
+      border-top: 1px solid rgba(20,99,197,0.12);
+      margin: var(--space-3) 0;
+    }
+    .summary-total {
+      font-size: var(--fs-lg);
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .coupon-box {
+      display: flex;
+      gap: var(--space-2);
+    }
+    .coupon-box .form-input { flex: 1; text-transform: uppercase; min-width: 0; }
+    @media (max-width: 480px) {
+      .coupon-box { flex-direction: column; }
+      .coupon-box .btn { width: 100%; }
+      .step-nav { flex-wrap: wrap; }
+      .step-nav .btn { flex: 1; min-width: 120px; }
+    }
+
+    /* Inline Catalog inside Step 1 */
+    .catalog-section {
+      margin-top: var(--space-6);
+      padding-top: var(--space-5);
+      border-top: 1px solid rgba(20,99,197,0.12);
+    }
+    .catalog-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .catalog-search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: min(100%, 220px);
+    }
+    .catalog-search-wrap input {
+      padding-left: 38px;
+    }
+    .catalog-search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      display: inline-flex;
+    }
+    .catalog-cats {
+      display: flex;
+      gap: var(--space-2);
+      overflow-x: auto;
+      padding-bottom: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+      gap: var(--space-3);
+      max-height: 460px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    @media (max-width: 640px) {
+      .catalog-grid {
+        grid-template-columns: 1fr;
+        max-height: none;
+      }
+    }
+    .catalog-item-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: rgba(255,255,255,0.72);
+      border: 1.5px solid rgba(20,99,197,0.12);
+      border-radius: var(--radius-md);
+      transition: var(--transition-fast);
+    }
+    .catalog-item-card.in-cart {
+      border-color: var(--blue);
+      background: rgba(20,99,197,0.06);
+    }
+    .catalog-item-title {
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.35;
+    }
+    .catalog-item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .catalog-item-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px solid rgba(20,99,197,0.08);
+    }
+
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-8);
+      padding-top: var(--space-5);
+      border-top: 1px solid rgba(20,99,197,0.1);
+    }
+
+    .consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: rgba(20,99,197,0.04);
+      border: 1px solid rgba(20,99,197,0.15);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: var(--fs-sm);
+      line-height: 1.6;
+    }
+    .consent-label input {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--blue);
+      flex-shrink: 0;
+    }
+
+    .confirm-hero {
+      text-align: center;
+      padding: var(--space-4) 0;
+    }
+    .confirm-badge-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: rgba(16,185,129,0.14);
+      color: var(--success);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+    }
+    .confirm-id-box {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(20,99,197,0.18);
+      border-radius: var(--radius-md);
+      margin: var(--space-4) 0;
+      font-weight: 700;
+      color: var(--navy);
+      font-size: var(--fs-lg);
+    }
+    .quick-add-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-bottom: 1px solid rgba(20,99,197,0.08);
+    }
+    .quick-add-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="booking-header fade-in">
+        <h1>Book Diagnostic Tests</h1>
+        <p>Complete the steps below to schedule your branch visit or home sample collection.</p>
+      </div>
+
+      <!-- Stepper -->
+      <div class="glass-card-static" style="padding: var(--space-3) var(--space-4); margin-bottom: var(--space-6);">
+        <div class="stepper" id="booking-stepper" aria-label="Booking progress"></div>
+      </div>
+
+      <div class="booking-layout" id="booking-layout">
+        <!-- Main Wizard Card -->
+        <div class="glass-card-static" id="wizard-card">
+
+          <!-- STEP 1: Select Tests & Cart Review -->
+          <div class="step-panel active" id="step-1">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="clipboard"></span> Select &amp; Review Tests</h2>
+            <p class="step-sub">Choose from all available diagnostic tests and health packages below, or review your selected items.</p>
+
+            <div id="cart-items-list"></div>
+
+            <div id="overlap-notice" style="display:none; margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: rgba(59,130,246,0.08); border-radius: var(--radius-md); font-size: var(--fs-xs); color: var(--navy);"></div>
+
+            <!-- Inline All Available Tests & Packages Browser -->
+            <div class="catalog-section" id="inline-catalog-section">
+              <div class="catalog-toolbar">
+                <div class="tabs" role="tablist">
+                  <button type="button" class="tab-btn active" data-cat-tab="tests" id="tab-all-tests">All Available Tests (<span id="count-all-tests">0</span>)</button>
+                  <button type="button" class="tab-btn" data-cat-tab="packages" id="tab-all-packages">Health Packages (<span id="count-all-packages">0</span>)</button>
+                </div>
+                <div class="catalog-search-wrap">
+                  <span class="catalog-search-icon icon-slot" data-icon="search"></span>
+                  <input type="search" id="inline-catalog-search" class="form-input" placeholder="Search test name or code..." aria-label="Search available tests">
+                </div>
+              </div>
+
+              <div class="catalog-cats" id="inline-category-chips"></div>
+              <div class="catalog-grid" id="inline-catalog-grid">
+                <div class="skeleton" style="height: 120px;"></div>
+                <div class="skeleton" style="height: 120px;"></div>
+                <div class="skeleton" style="height: 120px;"></div>
+              </div>
+            </div>
+
+            <div class="step-nav">
+              <span></span>
+              <button type="button" class="btn btn-primary" id="next-1">
+                Continue <span class="icon-slot" data-icon="arrowRight"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2: Appointment Type -->
+          <div class="step-panel" id="step-2">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="home"></span> Choose Appointment Type</h2>
+            <p class="step-sub">Select whether you want to visit a Ranchi Pathology branch or request home sample collection.</p>
+
+            <div class="choice-grid" id="type-choices">
+              <button type="button" class="choice-card" data-type="branch_visit">
+                <div class="choice-icon"><span class="icon-slot" data-icon="building"></span></div>
+                <div class="choice-title">Branch Visit (Walk-in)</div>
+                <div class="choice-desc">Visit our nearest diagnostic center at your chosen time slot. Zero collection fee.</div>
+              </button>
+              <button type="button" class="choice-card" data-type="home_collection">
+                <div class="choice-icon"><span class="icon-slot" data-icon="truck"></span></div>
+                <div class="choice-title">Home Sample Collection</div>
+                <div class="choice-desc">Trained phlebotomist visits your home or office safely at your preferred time window.</div>
+              </button>
+            </div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" data-prev="1">
+                <span class="icon-slot" data-icon="arrowLeft"></span> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="next-2">
+                Continue <span class="icon-slot" data-icon="arrowRight"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: Branch Selection -->
+          <div class="step-panel" id="step-3">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="mapPin"></span> Select Branch</h2>
+            <p class="step-sub">Choose the Ranchi Pathology branch closest to you.</p>
+
+            <div class="choice-grid" id="branch-choices">
+              <div class="skeleton" style="height: 130px;"></div>
+              <div class="skeleton" style="height: 130px;"></div>
+              <div class="skeleton" style="height: 130px;"></div>
+            </div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" data-prev="2">
+                <span class="icon-slot" data-icon="arrowLeft"></span> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="next-3">
+                Continue <span class="icon-slot" data-icon="arrowRight"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4: Date & Time Slot -->
+          <div class="step-panel" id="step-4">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="calendar"></span> Select Date &amp; Time Slot</h2>
+            <p class="step-sub">Pick an appointment date (branch holidays are skipped) and an available time slot.</p>
+
+            <div class="form-group">
+              <label class="form-label" for="appointment-date">Quick Pick Date</label>
+              <div class="quick-dates" id="quick-dates"></div>
+              <label class="form-label" for="appointment-date" style="margin-top: var(--space-2);">Or Choose Any Date</label>
+              <input type="date" id="appointment-date" class="form-input" style="max-width: 260px;">
+              <div id="holiday-alert" class="form-error" style="display:none; margin-top: var(--space-2);"></div>
+            </div>
+
+            <div class="form-group" style="margin-top: var(--space-6);">
+              <label class="form-label">Available Time Slots</label>
+              <div id="slots-container">
+                <p style="font-size: var(--fs-sm); color: var(--muted);">Select a date above to view available time slots.</p>
+              </div>
+            </div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" data-prev="3">
+                <span class="icon-slot" data-icon="arrowLeft"></span> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="next-4">
+                Continue <span class="icon-slot" data-icon="arrowRight"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 5: Patient Info -->
+          <div class="step-panel" id="step-5">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="user"></span> Patient Details</h2>
+            <p class="step-sub">Enter accurate patient details as they should appear on your pathology report.</p>
+
+            <form id="patient-form" novalidate>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="patient-name">Full Name *</label>
+                  <input type="text" id="patient-name" class="form-input" placeholder="e.g. Rahul Kumar" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="patient-phone">Mobile Number (10 digits) *</label>
+                  <input type="tel" id="patient-phone" class="form-input" placeholder="e.g. 9876543210" maxlength="10" required>
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="patient-age">Age (Years) *</label>
+                  <input type="number" id="patient-age" class="form-input" placeholder="e.g. 32" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="patient-gender">Gender *</label>
+                  <select id="patient-gender" class="form-input" required>
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="patient-email">Email Address (Optional)</label>
+                <input type="email" id="patient-email" class="form-input" placeholder="e.g. rahul@example.com">
+              </div>
+
+              <div id="home-address-fields" style="display:none; padding-top: var(--space-3); border-top: 1px dashed rgba(20,99,197,0.2); margin-top: var(--space-3);">
+                <h3 style="font-size: var(--fs-base); font-weight: 700; color: var(--navy); margin-bottom: var(--space-4);">Home Collection Address</h3>
+                <div class="form-group">
+                  <label class="form-label" for="home-address">Full Street Address / House No. *</label>
+                  <textarea id="home-address" class="form-input" rows="2" placeholder="House/Flat No., Street, Locality"></textarea>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="home-city">City / Town *</label>
+                    <input type="text" id="home-city" class="form-input" placeholder="e.g. Ranchi">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="home-pincode">Pincode (6 digits) *</label>
+                    <input type="text" id="home-pincode" class="form-input" placeholder="e.g. 834001" maxlength="6">
+                  </div>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="home-landmark">Landmark (Optional)</label>
+                    <input type="text" id="home-landmark" class="form-input" placeholder="Near School / Temple">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="home-instructions">Collection Instructions (Optional)</label>
+                    <input type="text" id="home-instructions" class="form-input" placeholder="Call on arrival, gate code, etc.">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="booking-notes">Special Notes / Doctor Reference (Optional)</label>
+                <input type="text" id="booking-notes" class="form-input" placeholder="Any clinical notes or special request">
+              </div>
+            </form>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" data-prev="4">
+                <span class="icon-slot" data-icon="arrowLeft"></span> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="next-5">
+                Continue <span class="icon-slot" data-icon="arrowRight"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 6: Review & Apply Coupon -->
+          <div class="step-panel" id="step-6">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="tag"></span> Review &amp; Apply Coupon</h2>
+            <p class="step-sub">Review your booking details and apply any promotional coupon code.</p>
+
+            <div id="review-details" style="margin-bottom: var(--space-5);"></div>
+
+            <div class="glass-card-static" style="background: rgba(255,255,255,0.65); padding: var(--space-4); margin-bottom: var(--space-5);">
+              <label class="form-label" for="coupon-input">Have a Coupon Code?</label>
+              <div class="coupon-box">
+                <input type="text" id="coupon-input" class="form-input" placeholder="e.g. WELCOME10">
+                <button type="button" class="btn btn-secondary" id="btn-apply-coupon">Apply</button>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-remove-coupon" style="display:none;">Remove</button>
+              </div>
+              <div id="coupon-status" style="font-size: var(--fs-xs); margin-top: var(--space-2);"></div>
+              <div style="font-size: var(--fs-xs); color: var(--muted); margin-top: var(--space-2);">
+                Check active codes on the <a href="/offers.html" target="_blank">Offers page</a>.
+              </div>
+            </div>
+
+            <div id="step6-breakdown" class="glass-card-static" style="background: rgba(255,255,255,0.75); padding: var(--space-4);"></div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" data-prev="5">
+                <span class="icon-slot" data-icon="arrowLeft"></span> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="next-6">
+                Proceed to Confirm <span class="icon-slot" data-icon="arrowRight"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 7: Consent & Submit -->
+          <div class="step-panel" id="step-7">
+            <h2 class="step-heading"><span class="icon-slot" data-icon="shield"></span> Consent &amp; Final Confirmation</h2>
+            <p class="step-sub">Confirm your consent to submit your diagnostic test booking.</p>
+
+            <div id="step7-final-summary" style="margin-bottom: var(--space-5);"></div>
+
+            <label class="consent-label" for="consent-checkbox">
+              <input type="checkbox" id="consent-checkbox">
+              <span>
+                I confirm that the patient details and selected tests are accurate. I consent to sample collection and diagnostic testing by Ranchi Pathology, and agree to the
+                <a href="/terms.html" target="_blank">Terms &amp; Conditions</a> and
+                <a href="/privacy.html" target="_blank">Privacy Policy</a>.
+              </span>
+            </label>
+            <div id="consent-error" class="form-error" style="display:none; margin-top: var(--space-2);">Please accept the consent checkbox to submit your booking.</div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" data-prev="6">
+                <span class="icon-slot" data-icon="arrowLeft"></span> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-lg" id="btn-submit-booking">
+                <span class="icon-slot" data-icon="check"></span> Confirm &amp; Submit Booking
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 8: Confirmation Screen -->
+          <div class="step-panel" id="step-8">
+            <div class="confirm-hero">
+              <div class="confirm-badge-icon"><span class="icon-slot" data-icon="check"></span></div>
+              <h2 style="font-size: var(--fs-2xl); font-weight: 800; color: var(--navy); margin-bottom: var(--space-2);">Booking Confirmed!</h2>
+              <p style="color: var(--muted); font-size: var(--fs-sm); max-width: 520px; margin: 0 auto;">
+                Your diagnostic appointment has been scheduled. Save your Booking ID and tracking link to check status, complete UPI payment, and download reports.
+              </p>
+
+              <div class="confirm-id-box">
+                <span>Booking ID: <span id="conf-booking-id">—</span></span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-booking-id">Copy</button>
+              </div>
+
+              <div id="conf-details-card" class="glass-card-static" style="text-align:left; margin: var(--space-4) auto; max-width: 540px; background: rgba(255,255,255,0.75);"></div>
+
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap: var(--space-3); margin-top: var(--space-6);">
+                <a href="/track-booking.html" id="conf-track-link" class="btn btn-primary btn-lg">
+                  <span class="icon-slot" data-icon="qrCode"></span> Track Booking &amp; Payment
+                </a>
+                <a href="/tests.html" class="btn btn-secondary btn-lg">Book Another Test</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sticky Summary Sidebar -->
+        <aside class="glass-card-static" id="summary-sidebar">
+          <h3 style="font-size: var(--fs-base); font-weight: 700; color: var(--navy); margin-bottom: var(--space-4); display:flex; align-items:center; gap: var(--space-2);">
+            <span class="icon-slot" data-icon="list"></span> Order Summary
+          </h3>
+          <div id="sidebar-content"></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Quick Add Modal -->
+  <div class="modal-overlay" id="quick-add-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Tests or Packages</h3>
+        <button class="modal-close" id="close-quick-add" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <input type="text" id="quick-add-search" class="form-input" placeholder="Search tests or packages...">
+        </div>
+        <div class="tabs" style="margin-bottom: var(--space-4);">
+          <button type="button" class="tab-btn active" data-qa-tab="tests">Tests</button>
+          <button type="button" class="tab-btn" data-qa-tab="packages">Packages</button>
+        </div>
+        <div id="quick-add-list" style="max-height: 340px; overflow-y: auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="done-quick-add">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script>
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('booking');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    function hydrateIcons(root = document) {
+      root.querySelectorAll('.icon-slot').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        if (name) el.innerHTML = Components.icon(name);
+      });
+    }
+    hydrateIcons();
+
+    const STEPS = [
+      { num: 1, label: 'Items' },
+      { num: 2, label: 'Type' },
+      { num: 3, label: 'Branch' },
+      { num: 4, label: 'Date & Slot' },
+      { num: 5, label: 'Patient' },
+      { num: 6, label: 'Review' },
+      { num: 7, label: 'Confirm' }
+    ];
+
+    const state = {
+      step: 1,
+      cart: [],
+      allTests: [],
+      allPackages: [],
+      categories: [],
+      branches: [],
+      holidaysByBranch: {},
+      appointmentType: 'branch_visit',
+      branchId: null,
+      date: '',
+      slots: [],
+      slotId: null,
+      selectedSlot: null,
+      patient: {
+        name: '', phone: '', age: '', gender: '', email: '',
+        homeAddress: '', homeCity: '', homePincode: '', homeLandmark: '', homeInstructions: '', notes: ''
+      },
+      coupon: null, // { code, discountAmount, title }
+      qaTab: 'tests',
+      qaQuery: '',
+      catalogTab: 'tests',
+      catalogCategory: '',
+      catalogQuery: ''
+    };
+
+    function getTodayISO() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getMaxDateISO() {
+      const dt = new Date();
+      dt.setDate(dt.getDate() + 30);
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    }
+
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('rp_cart');
+        const parsed = raw ? JSON.parse(raw) : [];
+        state.cart = Array.isArray(parsed) ? parsed.filter(i => i && i.id && i.type) : [];
+      } catch (_) {
+        state.cart = [];
+      }
+    }
+
+    function saveCart() {
+      localStorage.setItem('rp_cart', JSON.stringify(state.cart));
+    }
+
+    function getSelectedBranch() {
+      return state.branches.find(b => Number(b.id) === Number(state.branchId)) || null;
+    }
+
+    function computeTotals() {
+      // Detect any package-covered tests so display aligns with server deduplication
+      const selectedPkgIds = new Set(state.cart.filter(i => i.type === 'package').map(i => Number(i.id)));
+      const coveredTestIds = new Set();
+      state.allPackages.forEach(pkg => {
+        if (selectedPkgIds.has(Number(pkg.id)) && Array.isArray(pkg.tests)) {
+          pkg.tests.forEach(t => coveredTestIds.add(Number(t.id || t.test_id)));
+        }
+      });
+
+      let subtotal = 0;
+      const overlappedTests = [];
+      state.cart.forEach(item => {
+        if (item.type === 'test' && coveredTestIds.has(Number(item.id))) {
+          overlappedTests.push(item.name);
+        } else {
+          subtotal += Number(item.price || 0);
+        }
+      });
+
+      const branch = getSelectedBranch();
+      let homeCharge = 0;
+      if (state.appointmentType === 'home_collection' && branch) {
+        if (branch.home_collection_charge_type === 'fixed' || Number(branch.home_collection_charge_amount) > 0) {
+          homeCharge = Number(branch.home_collection_charge_amount || 0);
+        }
+      }
+
+      const discount = state.coupon ? Math.min(Number(state.coupon.discountAmount || 0), subtotal) : 0;
+      const total = Math.max(0, subtotal + homeCharge - discount);
+      return { subtotal, homeCharge, discount, total, overlappedTests };
+    }
+
+    function renderStepper() {
+      const el = document.getElementById('booking-stepper');
+      if (state.step === 8) {
+        el.innerHTML = `<div class="step done"><span class="step-number">${Components.icon('check')}</span><span>Booking Complete</span></div>`;
+        return;
+      }
+      el.innerHTML = STEPS.map((s, idx) => {
+        const cls = state.step > s.num ? 'done' : (state.step === s.num ? 'active' : '');
+        const lineCls = state.step > s.num ? 'done' : '';
+        const numHtml = state.step > s.num ? Components.icon('check') : s.num;
+        const line = idx < STEPS.length - 1 ? `<div class="step-line ${lineCls}"></div>` : '';
+        return `<div class="step ${cls}"><span class="step-number">${numHtml}</span><span>${s.label}</span></div>${line}`;
+      }).join('');
+    }
+
+    function goToStep(stepNum) {
+      state.step = stepNum;
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      const activePanel = document.getElementById(`step-${stepNum}`);
+      if (activePanel) activePanel.classList.add('active');
+
+      if (stepNum === 8) {
+        document.getElementById('summary-sidebar').style.display = 'none';
+        document.getElementById('booking-layout').style.gridTemplateColumns = '1fr';
+      } else {
+        document.getElementById('summary-sidebar').style.display = '';
+        document.getElementById('booking-layout').style.gridTemplateColumns = '';
+      }
+
+      if (stepNum === 3) renderBranches();
+      if (stepNum === 4) renderDatePickerAndSlots();
+      if (stepNum === 6) renderReviewStep();
+      if (stepNum === 7) renderConsentSummary();
+
+      renderStepper();
+      renderSidebar();
+      window.scrollTo(0, 0);
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cart-items-list');
+      const notice = document.getElementById('overlap-notice');
+      if (!state.cart.length) {
+        notice.style.display = 'none';
+        container.innerHTML = `
+          <div class="empty-state" style="padding: var(--space-8) var(--space-4);">
+            ${Components.icon('flask')}
+            <h3>Your booking cart is empty</h3>
+            <p>Add diagnostic tests or health checkup packages to get started.</p>
+          </div>`;
+        return;
+      }
+
+      const totals = computeTotals();
+      if (totals.overlappedTests.length) {
+        notice.style.display = 'block';
+        notice.innerHTML = `<strong>Duplicate Test Protection:</strong> ${UI.escapeHtml(totals.overlappedTests.join(', '))} already included in your selected package — not double-charged.`;
+      } else {
+        notice.style.display = 'none';
+      }
+
+      container.innerHTML = state.cart.map((item, idx) => {
+        const isOverlap = item.type === 'test' && totals.overlappedTests.includes(item.name);
+        return `
+          <div class="cart-item-row">
+            <div class="cart-item-info">
+              <div class="cart-item-name">${UI.escapeHtml(item.name)}</div>
+              <div style="margin-top:4px; display:flex; gap:var(--space-2); align-items:center; flex-wrap:wrap;">
+                <span class="badge ${item.type === 'package' ? 'badge-blue' : 'badge-gray'}">${item.type === 'package' ? 'Health Package' : 'Lab Test'}</span>
+                ${isOverlap ? '<span class="badge badge-green">Included in Package (₹0)</span>' : ''}
+              </div>
+            </div>
+            <div class="cart-item-actions">
+              <span class="price" style="font-size: var(--fs-base);">${isOverlap ? UI.formatCurrency(0) : UI.formatCurrency(item.price)}</span>
+              <button type="button" class="icon-btn" onclick="removeCartItem(${idx})" aria-label="Remove ${UI.escapeHtml(item.name)}">
+                ${Components.icon('trash')}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.removeCartItem = function(idx) {
+      const removed = state.cart.splice(idx, 1)[0];
+      saveCart();
+      if (state.coupon) {
+        state.coupon = null;
+        UI.toast('Coupon cleared because cart changed.', 'info');
+      }
+      renderCart();
+      renderSidebar();
+      renderInlineCatalog();
+      if (removed) UI.toast(`Removed ${removed.name}`, 'info');
+    };
+
+    function renderSidebar() {
+      const totals = computeTotals();
+      const branch = getSelectedBranch();
+      const el = document.getElementById('sidebar-content');
+      if (!state.cart.length) {
+        el.innerHTML = `<p style="font-size:var(--fs-sm); color:var(--muted);">No tests or packages selected yet.</p>`;
+        return;
+      }
+
+      el.innerHTML = `
+        <div style="margin-bottom: var(--space-3);">
+          ${state.cart.map(i => `
+            <div class="summary-row" style="font-size: var(--fs-xs);">
+              <span style="color:var(--dark-text); padding-right:8px;">${UI.escapeHtml(i.name)}</span>
+              <span style="font-weight:600; flex-shrink:0;">${UI.formatCurrency(i.price)}</span>
+            </div>
+          `).join('')}
+        </div>
+        <hr class="summary-divider">
+        <div class="summary-row">
+          <span style="color:var(--muted);">Tests &amp; Packages</span>
+          <span>${UI.formatCurrency(totals.subtotal)}</span>
+        </div>
+        <div class="summary-row">
+          <span style="color:var(--muted);">Home Collection</span>
+          <span>${state.appointmentType === 'home_collection'
+            ? (totals.homeCharge > 0 ? UI.formatCurrency(totals.homeCharge) : '<span class="badge badge-green">Free</span>')
+            : 'N/A (Branch Visit)'}</span>
+        </div>
+        ${totals.discount > 0 ? `
+        <div class="summary-row" style="color: var(--success);">
+          <span>Coupon (${UI.escapeHtml(state.coupon.code)})</span>
+          <span>-${UI.formatCurrency(totals.discount)}</span>
+        </div>` : ''}
+        <hr class="summary-divider">
+        <div class="summary-row summary-total">
+          <span>Total Amount</span>
+          <span>${UI.formatCurrency(totals.total)}</span>
+        </div>
+        ${branch ? `
+        <div style="margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid rgba(20,99,197,0.1); font-size: var(--fs-xs); color: var(--muted);">
+          <div><strong>Branch:</strong> ${UI.escapeHtml(branch.name)}</div>
+          ${state.date ? `<div><strong>Date:</strong> ${UI.formatDate(state.date)}</div>` : ''}
+          ${state.selectedSlot ? `<div><strong>Slot:</strong> ${UI.formatTime(state.selectedSlot.start_time)} – ${UI.formatTime(state.selectedSlot.end_time)}</div>` : ''}
+        </div>` : ''}
+      `;
+    }
+
+    // Step 2 selection
+    document.querySelectorAll('#type-choices .choice-card').forEach(card => {
+      card.addEventListener('click', () => {
+        state.appointmentType = card.dataset.type;
+        document.querySelectorAll('#type-choices .choice-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        // Clear selected slot since slot_type may change
+        state.slotId = null;
+        state.selectedSlot = null;
+        renderSidebar();
+      });
+    });
+    document.querySelector('#type-choices .choice-card[data-type="branch_visit"]').classList.add('selected');
+
+    function renderBranches() {
+      const container = document.getElementById('branch-choices');
+      if (!state.branches.length) {
+        container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><p>No active branches found.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = state.branches.map(b => {
+        const homeOk = Number(b.home_collection_available) !== 0;
+        const disabled = state.appointmentType === 'home_collection' && !homeOk;
+        const selected = Number(state.branchId) === Number(b.id);
+        const chargeText = b.home_collection_charge_type === 'fixed' && Number(b.home_collection_charge_amount) > 0
+          ? `Home Collection: ${UI.formatCurrency(b.home_collection_charge_amount)}`
+          : 'Home Collection: Free';
+
+        return `
+          <button type="button" class="choice-card ${selected ? 'selected' : ''} ${disabled ? 'disabled' : ''}" data-branch-id="${b.id}">
+            <div class="choice-icon">${Components.icon('mapPin')}</div>
+            <div class="choice-title">${UI.escapeHtml(b.name)}</div>
+            <div class="choice-desc">
+              <div>${UI.escapeHtml(b.address || b.city || '')}</div>
+              <div style="margin-top:4px;">Hours: ${UI.formatTime(b.opening_time || '08:00')} – ${UI.formatTime(b.closing_time || '20:00')}</div>
+              <div style="margin-top:6px;">
+                ${homeOk
+                  ? `<span class="badge badge-green">${chargeText}</span>`
+                  : `<span class="badge badge-gray">Branch Visit Only</span>`}
+              </div>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.choice-card:not(.disabled)').forEach(card => {
+        card.addEventListener('click', async () => {
+          state.branchId = Number(card.dataset.branchId);
+          state.slotId = null;
+          state.selectedSlot = null;
+          container.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          renderSidebar();
+          await fetchBranchHolidays(state.branchId);
+        });
+      });
+    }
+
+    async function fetchBranchHolidays(branchId) {
+      if (state.holidaysByBranch[branchId]) return;
+      try {
+        const res = await API.get(`/branches/${branchId}`);
+        const holidays = res.holidays || res.branch?.upcoming_holidays || res.branch?.holidays || [];
+        state.holidaysByBranch[branchId] = new Set(holidays.map(h => h.holiday_date || h.date || h));
+      } catch (_) {
+        state.holidaysByBranch[branchId] = new Set();
+      }
+    }
+
+    function isWeeklyOff(branch, dateStr) {
+      if (!branch || !branch.weekly_off) return false;
+      const d = new Date(dateStr + 'T00:00:00');
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = dayNames[d.getDay()];
+      return branch.weekly_off.toLowerCase().split(',').map(s => s.trim()).includes(dayName);
+    }
+
+    function isBranchHoliday(branchId, dateStr) {
+      const set = state.holidaysByBranch[branchId];
+      if (set && set.has(dateStr)) return true;
+      return isWeeklyOff(getSelectedBranch(), dateStr);
+    }
+
+    async function renderDatePickerAndSlots() {
+      if (state.branchId && !state.holidaysByBranch[state.branchId]) {
+        await fetchBranchHolidays(state.branchId);
+      }
+      const dateInput = document.getElementById('appointment-date');
+      const minDate = getTodayISO();
+      const maxDate = getMaxDateISO();
+      dateInput.min = minDate;
+      dateInput.max = maxDate;
+
+      // Pick first non-holiday date if none selected
+      if (!state.date) {
+        const dt = new Date();
+        for (let i = 0; i < 14; i++) {
+          const cand = new Date(dt);
+          cand.setDate(dt.getDate() + i);
+          const iso = `${cand.getFullYear()}-${String(cand.getMonth() + 1).padStart(2, '0')}-${String(cand.getDate()).padStart(2, '0')}`;
+          if (!isBranchHoliday(state.branchId, iso)) {
+            state.date = iso;
+            break;
+          }
+        }
+        if (!state.date) state.date = minDate;
+      }
+      dateInput.value = state.date;
+
+      // Render 7 quick date pills
+      const pillsEl = document.getElementById('quick-dates');
+      const base = new Date();
+      let pillsHtml = '';
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(base);
+        d.setDate(base.getDate() + i);
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const holiday = isBranchHoliday(state.branchId, iso);
+        const labelDay = i === 0 ? 'Today' : (i === 1 ? 'Tmrw' : d.toLocaleDateString('en-IN', { weekday: 'short' }));
+        const labelNum = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+        pillsHtml += `
+          <button type="button" class="date-pill ${state.date === iso ? 'selected' : ''} ${holiday ? 'holiday' : ''}" data-date="${iso}" ${holiday ? 'disabled title="Branch holiday"' : ''}>
+            <span class="dp-day">${labelDay}</span>
+            <span class="dp-num">${labelNum}</span>
+          </button>`;
+      }
+      pillsEl.innerHTML = pillsHtml;
+
+      pillsEl.querySelectorAll('.date-pill:not(.holiday)').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.date = pill.dataset.date;
+          dateInput.value = state.date;
+          state.slotId = null;
+          state.selectedSlot = null;
+          renderDatePickerAndSlots();
+        });
+      });
+
+      await loadSlots();
+    }
+
+    document.getElementById('appointment-date').addEventListener('change', async (e) => {
+      state.date = e.target.value;
+      state.slotId = null;
+      state.selectedSlot = null;
+      await renderDatePickerAndSlots();
+    });
+
+    async function loadSlots() {
+      const container = document.getElementById('slots-container');
+      const alertEl = document.getElementById('holiday-alert');
+      alertEl.style.display = 'none';
+
+      if (!state.branchId || !state.date) return;
+
+      if (isBranchHoliday(state.branchId, state.date)) {
+        alertEl.textContent = 'The selected branch is closed on this date (holiday / weekly off). Please choose another date.';
+        alertEl.style.display = 'block';
+        state.slots = [];
+        container.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = '<div class="spinner" style="margin: var(--space-4) auto;"></div>';
+      try {
+        const res = await API.get(`/branches/${state.branchId}/slots?date=${encodeURIComponent(state.date)}&type=${encodeURIComponent(state.appointmentType)}`);
+        if (res.isHoliday || res.is_holiday) {
+          alertEl.textContent = res.holiday_reason || res.holidayReason || res.reason || 'Selected date is a branch holiday. Please select another date.';
+          alertEl.style.display = 'block';
+          state.slots = [];
+          container.innerHTML = '';
+          return;
+        }
+
+        const rawSlots = Array.isArray(res) ? res : (res.slots || []);
+        const filtered = rawSlots.filter(s => !s.slot_type || s.slot_type === state.appointmentType);
+        state.slots = filtered;
+
+        if (!filtered.length) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding: var(--space-6) var(--space-4);">
+              ${Components.icon('clock')}
+              <h3>No slots available</h3>
+              <p>Please try selecting a different date or branch.</p>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = `<div class="slots-grid">${filtered.map(s => {
+          const remaining = s.available_spots !== undefined
+            ? Number(s.available_spots)
+            : (s.remaining !== undefined ? Number(s.remaining) : (Number(s.max_capacity || 0) - Number(s.booked_count || 0)));
+          const full = remaining <= 0 || Number(s.is_active) === 0 || s.is_available === false;
+          const isSelected = Number(state.slotId) === Number(s.id);
+          return `
+            <button type="button" class="slot-btn ${isSelected ? 'selected' : ''}" data-slot-id="${s.id}" ${full ? 'disabled' : ''}>
+              <span class="slot-time">${UI.formatTime(s.start_time)} – ${UI.formatTime(s.end_time)}</span>
+              <span class="slot-cap">${full ? 'Full' : `${remaining} slot${remaining === 1 ? '' : 's'} left`}</span>
+            </button>
+          `;
+        }).join('')}</div>`;
+
+        container.querySelectorAll('.slot-btn:not(:disabled)').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.slotId = Number(btn.dataset.slotId);
+            state.selectedSlot = state.slots.find(s => Number(s.id) === state.slotId) || null;
+            container.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            renderSidebar();
+          });
+        });
+      } catch (err) {
+        container.innerHTML = `<p style="color:var(--danger); font-size:var(--fs-sm);">${UI.escapeHtml(err.message || 'Could not load time slots.')}</p>`;
+      }
+    }
+
+    function validatePatientStep() {
+      const form = document.getElementById('patient-form');
+      UI.clearAllErrors(form);
+
+      const nameEl = document.getElementById('patient-name');
+      const phoneEl = document.getElementById('patient-phone');
+      const ageEl = document.getElementById('patient-age');
+      const genderEl = document.getElementById('patient-gender');
+      const emailEl = document.getElementById('patient-email');
+
+      let valid = true;
+      if (!nameEl.value.trim() || nameEl.value.trim().length < 2) {
+        UI.showFieldError(nameEl, 'Please enter patient full name.');
+        valid = false;
+      }
+      if (!UI.validatePhone(phoneEl.value)) {
+        UI.showFieldError(phoneEl, 'Enter a valid 10-digit Indian mobile number.');
+        valid = false;
+      }
+      const age = parseInt(ageEl.value, 10);
+      if (isNaN(age) || age < 1 || age > 120) {
+        UI.showFieldError(ageEl, 'Enter a valid age between 1 and 120.');
+        valid = false;
+      }
+      if (!genderEl.value) {
+        UI.showFieldError(genderEl, 'Please select gender.');
+        valid = false;
+      }
+      if (emailEl.value.trim() && !UI.validateEmail(emailEl.value.trim())) {
+        UI.showFieldError(emailEl, 'Enter a valid email address.');
+        valid = false;
+      }
+
+      const addrEl = document.getElementById('home-address');
+      const cityEl = document.getElementById('home-city');
+      const pinEl = document.getElementById('home-pincode');
+
+      if (state.appointmentType === 'home_collection') {
+        if (!addrEl.value.trim() || addrEl.value.trim().length < 5) {
+          UI.showFieldError(addrEl, 'Please enter complete street address.');
+          valid = false;
+        }
+        if (!cityEl.value.trim()) {
+          UI.showFieldError(cityEl, 'Please enter city or town.');
+          valid = false;
+        }
+        if (!UI.validatePincode(pinEl.value.trim())) {
+          UI.showFieldError(pinEl, 'Enter a valid 6-digit pincode.');
+          valid = false;
+        }
+      }
+
+      if (!valid) return false;
+
+      state.patient = {
+        name: nameEl.value.trim(),
+        phone: phoneEl.value.replace(/\D/g, ''),
+        age,
+        gender: genderEl.value,
+        email: emailEl.value.trim(),
+        homeAddress: addrEl.value.trim(),
+        homeCity: cityEl.value.trim(),
+        homePincode: pinEl.value.trim(),
+        homeLandmark: document.getElementById('home-landmark').value.trim(),
+        homeInstructions: document.getElementById('home-instructions').value.trim(),
+        notes: document.getElementById('booking-notes').value.trim()
+      };
+      return true;
+    }
+
+    function renderReviewStep() {
+      const branch = getSelectedBranch();
+      const totals = computeTotals();
+      const reviewEl = document.getElementById('review-details');
+      reviewEl.innerHTML = `
+        <div class="grid grid-2" style="gap: var(--space-4);">
+          <div class="glass-card-static" style="padding: var(--space-4); background: rgba(255,255,255,0.65);">
+            <h4 style="font-size:var(--fs-sm); color:var(--navy); margin-bottom:var(--space-2);">Appointment</h4>
+            <p style="font-size:var(--fs-xs); color:var(--dark-text); line-height:1.7;">
+              <strong>Type:</strong> ${state.appointmentType === 'home_collection' ? 'Home Collection' : 'Branch Visit'}<br>
+              <strong>Branch:</strong> ${UI.escapeHtml(branch ? branch.name : '—')}<br>
+              <strong>Date:</strong> ${UI.formatDate(state.date)}<br>
+              <strong>Slot:</strong> ${state.selectedSlot ? `${UI.formatTime(state.selectedSlot.start_time)} – ${UI.formatTime(state.selectedSlot.end_time)}` : '—'}
+            </p>
+          </div>
+          <div class="glass-card-static" style="padding: var(--space-4); background: rgba(255,255,255,0.65);">
+            <h4 style="font-size:var(--fs-sm); color:var(--navy); margin-bottom:var(--space-2);">Patient Details</h4>
+            <p style="font-size:var(--fs-xs); color:var(--dark-text); line-height:1.7;">
+              <strong>Name:</strong> ${UI.escapeHtml(state.patient.name)} (${state.patient.age}y, ${UI.escapeHtml(state.patient.gender)})<br>
+              <strong>Phone:</strong> ${UI.formatPhone(state.patient.phone)}<br>
+              ${state.patient.email ? `<strong>Email:</strong> ${UI.escapeHtml(state.patient.email)}<br>` : ''}
+              ${state.appointmentType === 'home_collection' ? `<strong>Address:</strong> ${UI.escapeHtml(state.patient.homeAddress)}, ${UI.escapeHtml(state.patient.homeCity)} - ${UI.escapeHtml(state.patient.homePincode)}` : ''}
+            </p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('step6-breakdown').innerHTML = `
+        <h4 style="font-size:var(--fs-sm); color:var(--navy); margin-bottom:var(--space-3);">Price Breakdown</h4>
+        <div class="summary-row"><span>Tests &amp; Packages Subtotal</span><span>${UI.formatCurrency(totals.subtotal)}</span></div>
+        <div class="summary-row"><span>Home Collection Charge</span><span>${state.appointmentType === 'home_collection' ? (totals.homeCharge > 0 ? UI.formatCurrency(totals.homeCharge) : 'Free') : UI.formatCurrency(0)}</span></div>
+        <div class="summary-row" style="color:var(--success);"><span>Coupon Discount ${state.coupon ? `(${UI.escapeHtml(state.coupon.code)})` : ''}</span><span>-${UI.formatCurrency(totals.discount)}</span></div>
+        <hr class="summary-divider">
+        <div class="summary-row summary-total"><span>Payable Amount</span><span>${UI.formatCurrency(totals.total)}</span></div>
+      `;
+    }
+
+    function renderConsentSummary() {
+      const totals = computeTotals();
+      const branch = getSelectedBranch();
+      document.getElementById('step7-final-summary').innerHTML = `
+        <div class="glass-card-static" style="padding: var(--space-4); background: rgba(255,255,255,0.75);">
+          <div class="summary-row"><strong>Patient</strong><span>${UI.escapeHtml(state.patient.name)} (${UI.formatPhone(state.patient.phone)})</span></div>
+          <div class="summary-row"><strong>Branch &amp; Type</strong><span>${UI.escapeHtml(branch ? branch.name : '')} · ${state.appointmentType === 'home_collection' ? 'Home Collection' : 'Branch Visit'}</span></div>
+          <div class="summary-row"><strong>Date &amp; Time</strong><span>${UI.formatDate(state.date)} · ${state.selectedSlot ? UI.formatTime(state.selectedSlot.start_time) : ''}</span></div>
+          <div class="summary-row"><strong>Items</strong><span>${state.cart.length} item(s)</span></div>
+          <hr class="summary-divider">
+          <div class="summary-row summary-total"><span>Final Total</span><span>${UI.formatCurrency(totals.total)}</span></div>
+        </div>
+      `;
+    }
+
+    // Coupon apply/remove
+    document.getElementById('btn-apply-coupon').addEventListener('click', async () => {
+      const input = document.getElementById('coupon-input');
+      const statusEl = document.getElementById('coupon-status');
+      const code = input.value.trim().toUpperCase();
+      if (!code) {
+        UI.toast('Please enter a coupon code.', 'warning');
+        return;
+      }
+      const totals = computeTotals();
+      const btn = document.getElementById('btn-apply-coupon');
+      UI.setButtonLoading(btn, true);
+      try {
+        const res = await API.post('/offers/validate', {
+          code,
+          subtotal: totals.subtotal,
+          orderAmount: totals.subtotal,
+          branch_id: state.branchId,
+          branchId: state.branchId,
+          phone: state.patient.phone,
+          items: state.cart.map(i => ({ item_type: i.type, item_id: Number(i.id), type: i.type, id: Number(i.id), quantity: 1 }))
+        });
+        const discount = Number(res.discountAmount ?? res.discount_amount ?? res.discount ?? 0);
+        state.coupon = { code, discountAmount: discount, title: res.title || code };
+        statusEl.innerHTML = `<span style="color:var(--success); font-weight:600;">Coupon ${UI.escapeHtml(code)} applied! You save ${UI.formatCurrency(discount)}.</span>`;
+        document.getElementById('btn-remove-coupon').style.display = 'inline-flex';
+        input.disabled = true;
+        renderReviewStep();
+        renderSidebar();
+        UI.toast('Coupon applied successfully!', 'success');
+      } catch (err) {
+        state.coupon = null;
+        statusEl.innerHTML = `<span style="color:var(--danger);">${UI.escapeHtml(err.message || 'Invalid or inapplicable coupon code.')}</span>`;
+        UI.toast(err.message || 'Invalid coupon code.', 'error');
+      } finally {
+        UI.setButtonLoading(btn, false);
+      }
+    });
+
+    document.getElementById('btn-remove-coupon').addEventListener('click', () => {
+      state.coupon = null;
+      const input = document.getElementById('coupon-input');
+      input.disabled = false;
+      input.value = '';
+      document.getElementById('coupon-status').textContent = '';
+      document.getElementById('btn-remove-coupon').style.display = 'none';
+      renderReviewStep();
+      renderSidebar();
+    });
+
+    // Step navigation handlers
+    document.getElementById('next-1').addEventListener('click', () => {
+      if (!state.cart.length) {
+        UI.toast('Please add at least one test or package to continue.', 'warning');
+        return;
+      }
+      goToStep(2);
+    });
+
+    document.getElementById('next-2').addEventListener('click', () => {
+      const addrFields = document.getElementById('home-address-fields');
+      addrFields.style.display = state.appointmentType === 'home_collection' ? 'block' : 'none';
+      goToStep(3);
+    });
+
+    document.getElementById('next-3').addEventListener('click', () => {
+      if (!state.branchId) {
+        UI.toast('Please select a branch to continue.', 'warning');
+        return;
+      }
+      goToStep(4);
+    });
+
+    document.getElementById('next-4').addEventListener('click', () => {
+      if (!state.date) {
+        UI.toast('Please select an appointment date.', 'warning');
+        return;
+      }
+      if (!state.slotId) {
+        UI.toast('Please select an available time slot.', 'warning');
+        return;
+      }
+      goToStep(5);
+    });
+
+    document.getElementById('next-5').addEventListener('click', () => {
+      if (validatePatientStep()) goToStep(6);
+    });
+
+    document.getElementById('next-6').addEventListener('click', () => {
+      goToStep(7);
+    });
+
+    document.querySelectorAll('[data-prev]').forEach(btn => {
+      btn.addEventListener('click', () => goToStep(Number(btn.dataset.prev)));
+    });
+
+    // Final submission
+    document.getElementById('btn-submit-booking').addEventListener('click', async () => {
+      const consent = document.getElementById('consent-checkbox');
+      const errEl = document.getElementById('consent-error');
+      if (!consent.checked) {
+        errEl.style.display = 'block';
+        UI.toast('Please accept the consent checkbox.', 'warning');
+        return;
+      }
+      errEl.style.display = 'none';
+
+      const btn = document.getElementById('btn-submit-booking');
+      UI.setButtonLoading(btn, true);
+      try {
+        const payload = {
+          branch_id: state.branchId,
+          appointment_type: state.appointmentType,
+          appointment_date: state.date,
+          appointment_time: state.selectedSlot ? state.selectedSlot.start_time : '',
+          slot_id: state.slotId,
+          patient_name: state.patient.name,
+          patient_phone: state.patient.phone,
+          patient_age: state.patient.age,
+          patient_gender: state.patient.gender,
+          patient_email: state.patient.email || null,
+          home_address: state.appointmentType === 'home_collection' ? state.patient.homeAddress : null,
+          home_city: state.appointmentType === 'home_collection' ? state.patient.homeCity : null,
+          home_pincode: state.appointmentType === 'home_collection' ? state.patient.homePincode : null,
+          home_landmark: state.appointmentType === 'home_collection' ? state.patient.homeLandmark : null,
+          home_contact_instructions: state.appointmentType === 'home_collection' ? state.patient.homeInstructions : null,
+          notes: state.patient.notes || null,
+          coupon_code: state.coupon ? state.coupon.code : null,
+          consent_given: true,
+          items: state.cart.map(i => ({ item_type: i.type, item_id: Number(i.id), type: i.type, id: Number(i.id), quantity: 1 }))
+        };
+
+        const res = await API.post('/bookings', payload);
+        const bookingObj = res.booking || res;
+        const bookingId = bookingObj.booking_id || bookingObj.bookingId || res.booking_id || res.bookingId || 'CONFIRMED';
+        const trackingToken = bookingObj.tracking_token || bookingObj.trackingToken || res.tracking_token || res.trackingToken || '';
+        const finalTotal = bookingObj.total_amount ?? res.total_amount ?? computeTotals().total;
+        const branch = getSelectedBranch();
+
+        // Save up to 10 most recent bookings on this device for quick Track Booking access
+        try {
+          const prev = JSON.parse(localStorage.getItem('rp_device_bookings') || '[]');
+          const list = Array.isArray(prev) ? prev : [];
+          const entry = {
+            booking_id: bookingId,
+            tracking_token: trackingToken,
+            patient_name: state.patient.name,
+            branch_name: branch ? branch.name : '—',
+            appointment_type: state.appointmentType,
+            appointment_date: state.date,
+            appointment_time: state.selectedSlot ? state.selectedSlot.start_time : '',
+            total_amount: finalTotal,
+            items: state.cart.map(i => i.name),
+            created_at: new Date().toISOString()
+          };
+          const deduped = [entry, ...list.filter(x => x.booking_id !== bookingId)].slice(0, 10);
+          localStorage.setItem('rp_device_bookings', JSON.stringify(deduped));
+        } catch (_) {}
+
+        // Clear cart
+        localStorage.removeItem('rp_cart');
+        state.cart = [];
+
+        document.getElementById('conf-booking-id').textContent = bookingId;
+        document.getElementById('btn-copy-booking-id').onclick = () => {
+          navigator.clipboard?.writeText(bookingId);
+          UI.toast('Booking ID copied!', 'success');
+        };
+
+        const trackUrl = trackingToken ? `/track-booking.html?token=${encodeURIComponent(trackingToken)}` : '/track-booking.html';
+        document.getElementById('conf-track-link').href = trackUrl;
+
+        document.getElementById('conf-details-card').innerHTML = `
+          <div class="summary-row"><strong>Patient</strong><span>${UI.escapeHtml(state.patient.name)}</span></div>
+          <div class="summary-row"><strong>Branch</strong><span>${UI.escapeHtml(branch ? branch.name : '—')}</span></div>
+          <div class="summary-row"><strong>Type</strong><span>${state.appointmentType === 'home_collection' ? 'Home Collection' : 'Branch Visit'}</span></div>
+          <div class="summary-row"><strong>Appointment</strong><span>${UI.formatDate(state.date)} · ${state.selectedSlot ? UI.formatTime(state.selectedSlot.start_time) : ''}</span></div>
+          <div class="summary-row"><strong>Amount Payable</strong><span style="font-weight:700; color:var(--navy);">${UI.formatCurrency(finalTotal)}</span></div>
+          ${trackingToken ? `<div class="summary-row"><strong>Tracking Token</strong><span style="font-family:monospace; font-size:var(--fs-xs);">${UI.escapeHtml(trackingToken)}</span></div>` : ''}
+        `;
+
+        UI.toast('Booking submitted successfully!', 'success');
+        goToStep(8);
+        hydrateIcons(document.getElementById('step-8'));
+      } catch (err) {
+        UI.toast(err.message || 'Failed to submit booking. Please check your details and try again.', 'error');
+      } finally {
+        UI.setButtonLoading(btn, false);
+      }
+    });
+
+    // Quick Add Modal
+    function renderQuickAddList() {
+      const listEl = document.getElementById('quick-add-list');
+      const q = state.qaQuery.trim().toLowerCase();
+      const source = state.qaTab === 'tests' ? state.allTests : state.allPackages;
+      const filtered = source.filter(item => !q || (item.name || '').toLowerCase().includes(q) || (item.test_code || '').toLowerCase().includes(q));
+
+      if (!filtered.length) {
+        listEl.innerHTML = `<p style="text-align:center; color:var(--muted); padding: var(--space-6);">No matching items found.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.slice(0, 40).map(item => {
+        const type = state.qaTab === 'tests' ? 'test' : 'package';
+        const price = type === 'test' ? (item.discounted_price || item.price) : item.offer_price;
+        const inCart = state.cart.some(c => c.type === type && Number(c.id) === Number(item.id));
+        return `
+          <div class="quick-add-item">
+            <div>
+              <div style="font-weight:600; font-size:var(--fs-sm); color:var(--navy);">${UI.escapeHtml(item.name)}</div>
+              <div style="font-size:var(--fs-xs); color:var(--muted);">${UI.formatCurrency(price)}</div>
+            </div>
+            <button type="button" class="btn btn-sm ${inCart ? 'btn-success' : 'btn-primary'}" onclick="toggleQuickAdd('${type}', ${item.id})" ${inCart ? 'disabled' : ''}>
+              ${inCart ? 'Added' : 'Add'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.toggleQuickAdd = function(type, id) {
+      const source = type === 'test' ? state.allTests : state.allPackages;
+      const item = source.find(x => Number(x.id) === Number(id));
+      if (!item) return;
+      if (state.cart.some(c => c.type === type && Number(c.id) === Number(id))) return;
+      const price = type === 'test' ? Number(item.discounted_price || item.price) : Number(item.offer_price);
+      state.cart.push({ type, id: Number(item.id), name: item.name, price });
+      saveCart();
+      renderCart();
+      renderSidebar();
+      renderQuickAddList();
+      UI.toast(`Added ${item.name}`, 'success');
+    };
+
+    function renderInlineCategoryChips() {
+      const el = document.getElementById('inline-category-chips');
+      if (!el) return;
+      if (state.catalogTab !== 'tests') {
+        el.style.display = 'none';
+        return;
+      }
+      el.style.display = 'flex';
+      const chips = [
+        `<button type="button" class="chip ${!state.catalogCategory ? 'selected' : ''}" data-cat="">All Categories</button>`
+      ];
+      state.categories.forEach(cat => {
+        const active = String(state.catalogCategory) === String(cat.id);
+        chips.push(`<button type="button" class="chip ${active ? 'selected' : ''}" data-cat="${cat.id}">${UI.escapeHtml(cat.name)}</button>`);
+      });
+      el.innerHTML = chips.join('');
+      el.querySelectorAll('.chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.catalogCategory = btn.dataset.cat;
+          renderInlineCategoryChips();
+          renderInlineCatalog();
+        });
+      });
+    }
+
+    function renderInlineCatalog() {
+      const grid = document.getElementById('inline-catalog-grid');
+      if (!grid) return;
+      const q = state.catalogQuery.trim().toLowerCase();
+
+      if (state.catalogTab === 'tests') {
+        const filtered = state.allTests.filter(t => {
+          if (state.catalogCategory && String(t.category_id) !== String(state.catalogCategory)) return false;
+          if (!q) return true;
+          return (t.name || '').toLowerCase().includes(q)
+            || (t.test_code || '').toLowerCase().includes(q)
+            || (t.category_name || '').toLowerCase().includes(q);
+        });
+        if (!filtered.length) {
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:var(--space-6);"><p>No matching tests found.</p></div>`;
+          return;
+        }
+        grid.innerHTML = filtered.map(t => {
+          const price = Number(t.discounted_price !== null && t.discounted_price !== undefined ? t.discounted_price : t.price);
+          const hasDisc = t.discounted_price !== null && t.discounted_price !== undefined && Number(t.discounted_price) < Number(t.price);
+          const inCart = state.cart.some(c => c.type === 'test' && Number(c.id) === Number(t.id));
+          return `
+            <div class="catalog-item-card ${inCart ? 'in-cart' : ''}">
+              <div>
+                <div class="catalog-item-title">${UI.escapeHtml(t.name)}</div>
+                <div class="catalog-item-meta">
+                  <span class="badge badge-gray">${UI.escapeHtml(t.test_code || '')}</span>
+                  <span>${UI.escapeHtml(t.sample_type || 'Blood')}</span>
+                  ${t.fasting_required ? '<span class="badge badge-yellow">Fasting</span>' : ''}
+                  <span>${UI.escapeHtml(t.report_time || '')}</span>
+                </div>
+              </div>
+              <div class="catalog-item-footer">
+                <div>
+                  ${hasDisc ? `<span class="price-original" style="font-size:var(--fs-xs);">${UI.formatCurrency(t.price)}</span>` : ''}
+                  <span class="price" style="font-size:var(--fs-base);">${UI.formatCurrency(price)}</span>
+                </div>
+                <button type="button" class="btn btn-sm ${inCart ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCatalogItem('test', ${t.id})">
+                  ${inCart ? 'Remove' : 'Add Test'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        const filtered = state.allPackages.filter(p => {
+          if (!q) return true;
+          return (p.name || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q);
+        });
+        if (!filtered.length) {
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:var(--space-6);"><p>No matching packages found.</p></div>`;
+          return;
+        }
+        grid.innerHTML = filtered.map(p => {
+          const inCart = state.cart.some(c => c.type === 'package' && Number(c.id) === Number(p.id));
+          const testCount = Array.isArray(p.tests) ? p.tests.length : (p.test_count || 0);
+          return `
+            <div class="catalog-item-card ${inCart ? 'in-cart' : ''}">
+              <div>
+                <div class="catalog-item-title">${UI.escapeHtml(p.name)}</div>
+                <div class="catalog-item-meta">
+                  <span class="badge badge-blue">${testCount} Tests Included</span>
+                  ${p.discount_percent ? `<span class="badge badge-green">${p.discount_percent}% Off</span>` : ''}
+                </div>
+              </div>
+              <div class="catalog-item-footer">
+                <div>
+                  ${p.original_price > p.offer_price ? `<span class="price-original" style="font-size:var(--fs-xs);">${UI.formatCurrency(p.original_price)}</span>` : ''}
+                  <span class="price" style="font-size:var(--fs-base);">${UI.formatCurrency(p.offer_price)}</span>
+                </div>
+                <button type="button" class="btn btn-sm ${inCart ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCatalogItem('package', ${p.id})">
+                  ${inCart ? 'Remove' : 'Add Package'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    window.toggleCatalogItem = function(type, id) {
+      const idx = state.cart.findIndex(c => c.type === type && Number(c.id) === Number(id));
+      if (idx >= 0) {
+        const removed = state.cart.splice(idx, 1)[0];
+        saveCart();
+        if (state.coupon) state.coupon = null;
+        renderCart();
+        renderSidebar();
+        renderInlineCatalog();
+        if (removed) UI.toast(`Removed ${removed.name}`, 'info');
+        return;
+      }
+      const source = type === 'test' ? state.allTests : state.allPackages;
+      const item = source.find(x => Number(x.id) === Number(id));
+      if (!item) return;
+      const price = type === 'test'
+        ? Number(item.discounted_price !== null && item.discounted_price !== undefined ? item.discounted_price : item.price)
+        : Number(item.offer_price);
+      state.cart.push({ type, id: Number(item.id), name: item.name, price });
+      saveCart();
+      renderCart();
+      renderSidebar();
+      renderInlineCatalog();
+      UI.toast(`Added ${item.name}`, 'success');
+    };
+
+    const btnOpenQa = document.getElementById('btn-open-quick-add');
+    if (btnOpenQa) {
+      btnOpenQa.addEventListener('click', () => {
+        renderQuickAddList();
+        UI.openModal('quick-add-modal');
+      });
+    }
+    document.getElementById('close-quick-add')?.addEventListener('click', () => UI.closeModal('quick-add-modal'));
+    document.getElementById('done-quick-add')?.addEventListener('click', () => UI.closeModal('quick-add-modal'));
+    document.getElementById('quick-add-search')?.addEventListener('input', UI.debounce(e => {
+      state.qaQuery = e.target.value;
+      renderQuickAddList();
+    }, 200));
+    document.querySelectorAll('[data-qa-tab]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('[data-qa-tab]').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        state.qaTab = tab.dataset.qaTab;
+        renderQuickAddList();
+      });
+    });
+
+    document.getElementById('inline-catalog-search')?.addEventListener('input', UI.debounce(e => {
+      state.catalogQuery = e.target.value;
+      renderInlineCatalog();
+    }, 180));
+    document.querySelectorAll('[data-cat-tab]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('[data-cat-tab]').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        state.catalogTab = tab.dataset.catTab;
+        renderInlineCategoryChips();
+        renderInlineCatalog();
+      });
+    });
+
+    // Init
+    (async function init() {
+      loadCart();
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('type') === 'home') {
+        state.appointmentType = 'home_collection';
+        document.querySelectorAll('#type-choices .choice-card').forEach(c => {
+          c.classList.toggle('selected', c.dataset.type === 'home_collection');
+        });
+        document.getElementById('home-address-fields').style.display = 'block';
+      }
+      renderStepper();
+      renderCart();
+      renderSidebar();
+
+      try {
+        const [settingsRes, branchesRes, testsRes, pkgsRes, catsRes] = await Promise.allSettled([
+          API.get('/settings/public'),
+          API.get('/branches'),
+          API.get('/tests'),
+          API.get('/packages'),
+          API.get('/categories')
+        ]);
+
+        if (settingsRes.status === 'fulfilled') {
+          const env = settingsRes.value.environment || settingsRes.value.settings?.environment;
+          if (env === 'demo') {
+            document.getElementById('demo-banner-container').innerHTML =
+              '<div class="demo-banner">DEMO MODE — Sample data &amp; simulated workflows active</div>';
+          }
+        }
+        if (branchesRes.status === 'fulfilled') {
+          state.branches = Array.isArray(branchesRes.value) ? branchesRes.value : (branchesRes.value.branches || []);
+        }
+        if (testsRes.status === 'fulfilled') {
+          state.allTests = Array.isArray(testsRes.value) ? testsRes.value : (testsRes.value.tests || []);
+        }
+        if (pkgsRes.status === 'fulfilled') {
+          state.allPackages = Array.isArray(pkgsRes.value) ? pkgsRes.value : (pkgsRes.value.packages || []);
+        }
+        if (catsRes.status === 'fulfilled') {
+          state.categories = Array.isArray(catsRes.value) ? catsRes.value : (catsRes.value.categories || []);
+        }
+
+        const cTests = document.getElementById('count-all-tests');
+        const cPkgs = document.getElementById('count-all-packages');
+        if (cTests) cTests.textContent = String(state.allTests.length);
+        if (cPkgs) cPkgs.textContent = String(state.allPackages.length);
+
+        renderCart();
+        renderSidebar();
+        renderInlineCategoryChips();
+        renderInlineCatalog();
+      } catch (_) {}
+    })();
+  </script>
+</body>
+</html>

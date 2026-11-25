@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <!-- Filters -->
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field" style="flex:0 0 auto;min-width:auto">
+              <label>Date Range</label>
+              <div class="tabs" id="period-tabs">
+                <button type="button" class="tab-btn" data-period="today">Today</button>
+                <button type="button" class="tab-btn" data-period="yesterday">Yesterday</button>
+                <button type="button" class="tab-btn active" data-period="7d">7 Days</button>
+                <button type="button" class="tab-btn" data-period="30d">30 Days</button>
+                <button type="button" class="tab-btn" data-period="custom">Custom</button>
+              </div>
+            </div>
+            <div class="filter-field" id="custom-date-from-wrap" style="display:none;max-width:170px">
+              <label for="filter-from">From</label>
+              <input type="date" id="filter-from" class="form-input">
+            </div>
+            <div class="filter-field" id="custom-date-to-wrap" style="display:none;max-width:170px">
+              <label for="filter-to">To</label>
+              <input type="date" id="filter-to" class="form-input">
+            </div>
+            <div class="filter-field" style="max-width:220px">
+              <label for="filter-branch">Branch</label>
+              <select id="filter-branch" class="form-input">
+                <option value="">All Branches</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="apply-filters-btn">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <section class="metric-grid" id="metrics-grid">
+          <div class="metric-card"><div class="skeleton" style="height:80px"></div></div>
+          <div class="metric-card"><div class="skeleton" style="height:80px"></div></div>
+          <div class="metric-card"><div class="skeleton" style="height:80px"></div></div>
+          <div class="metric-card"><div class="skeleton" style="height:80px"></div></div>
+        </section>
+
+        <!-- Branch-wise Counts Strip -->
+        <section class="glass-card-static" style="margin-bottom:var(--space-6);padding:var(--space-4) var(--space-5)" id="branch-counts-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3)">
+            <span style="font-size:var(--fs-sm);font-weight:700;color:var(--navy)">Branch-wise Bookings</span>
+            <div id="branch-counts-list" style="display:flex;flex-wrap:wrap;gap:var(--space-3)"></div>
+          </div>
+        </section>
+
+        <!-- Charts -->
+        <section class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h2 class="chart-title">Booking Trend</h2>
+              <span class="badge badge-blue">Daily Bookings</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chart-bookings"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <h2 class="chart-title">Revenue Trend</h2>
+              <span class="badge badge-green">INR (₹)</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chart-revenue"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <h2 class="chart-title">Branch Comparison</h2>
+              <span class="badge badge-blue">Distribution</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chart-branches"></canvas></div>
+            <div class="chart-legend" id="legend-branches"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <h2 class="chart-title">Appointment Type Split</h2>
+              <span class="badge badge-gray">Visit vs Home</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chart-types"></canvas></div>
+            <div class="chart-legend" id="legend-types"></div>
+          </div>
+        </section>
+
+        <!-- Recent Bookings -->
+        <section class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">Recent Bookings</h2>
+            <a href="/admin/bookings.html" class="btn btn-secondary btn-sm">View All Bookings</a>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Patient</th>
+                  <th>Branch</th>
+                  <th>Date &amp; Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                </tr>
+              </thead>
+              <tbody id="recent-bookings-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">Loading recent bookings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="recent-bookings-cards"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let currentPeriod = '7d';
+      let lastDashboardData = null;
+
+      function getDateRange(period) {
+        const now = new Date();
+        const fmt = (d) => d.toISOString().slice(0, 10);
+        const today = fmt(now);
+        if (period === 'today') return { from: today, to: today };
+        if (period === 'yesterday') {
+          const y = new Date(now);
+          y.setDate(y.getDate() - 1);
+          const yd = fmt(y);
+          return { from: yd, to: yd };
+        }
+        if (period === '7d') {
+          const s = new Date(now);
+          s.setDate(s.getDate() - 6);
+          return { from: fmt(s), to: today };
+        }
+        if (period === '30d') {
+          const s = new Date(now);
+          s.setDate(s.getDate() - 29);
+          return { from: fmt(s), to: today };
+        }
+        return {
+          from: document.getElementById('filter-from').value || today,
+          to: document.getElementById('filter-to').value || today,
+        };
+      }
+
+      async function loadBranches() {
+        try {
+          const res = await API.get('/branches');
+          const branches = AdminCommon.unwrapList(res, ['branches', 'data']);
+          const sel = document.getElementById('filter-branch');
+          branches.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.name;
+            sel.appendChild(opt);
+          });
+        } catch {
+          // Non-critical
+        }
+      }
+
+      async function loadDashboard() {
+        const branchId = document.getElementById('filter-branch').value;
+        const range = getDateRange(currentPeriod);
+        const params = new URLSearchParams();
+        params.set('period', currentPeriod);
+        if (range.from) {
+          params.set('from', range.from);
+          params.set('start_date', range.from);
+        }
+        if (range.to) {
+          params.set('to', range.to);
+          params.set('end_date', range.to);
+        }
+        if (branchId) params.set('branch_id', branchId);
+
+        try {
+          const data = await API.get(`/admin/dashboard?${params.toString()}`);
+          lastDashboardData = data;
+          renderMetrics(data);
+          renderBranchCounts(data);
+          renderCharts(data);
+          renderRecentBookings(data);
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load dashboard data', 'error');
+        }
+      }
+
+      function pick(obj, keys, fallback = 0) {
+        if (!obj) return fallback;
+        for (const k of keys) {
+          if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+        }
+        return fallback;
+      }
+
+      function renderMetrics(data) {
+        const s = data.stats || data.metrics || data.summary || data;
+        const cards = [
+          { label: 'Total Bookings', value: pick(s, ['total_bookings', 'totalBookings']), icon: 'calendar', color: 'blue' },
+          { label: "Today's Bookings", value: pick(s, ['today_bookings', 'todays_bookings', 'todayBookings']), icon: 'clock', color: 'cyan' },
+          { label: 'Pending Bookings', value: pick(s, ['pending_bookings', 'pendingBookings', 'new_bookings']), icon: 'clipboard', color: 'yellow' },
+          { label: 'Confirmed', value: pick(s, ['confirmed_bookings', 'confirmedBookings']), icon: 'check', color: 'blue' },
+          { label: 'Completed', value: pick(s, ['completed_bookings', 'completedBookings']), icon: 'userCheck', color: 'green' },
+          { label: 'Pending Payments', value: pick(s, ['pending_payments', 'pendingPayments']), icon: 'qrCode', color: 'yellow' },
+          { label: 'Verified Payments', value: pick(s, ['verified_payments', 'verifiedPayments']), icon: 'shield', color: 'green' },
+          { label: 'Total Revenue', value: UI.formatCurrency(pick(s, ['total_revenue', 'totalRevenue', 'revenue'])), icon: 'dollarSign', color: 'green' },
+          { label: 'Reports Uploaded', value: pick(s, ['reports_uploaded', 'reportsUploaded', 'total_reports']), icon: 'fileText', color: 'cyan' },
+        ];
+
+        document.getElementById('metrics-grid').innerHTML = cards.map(c => `
+          <div class="metric-card">
+            <div class="metric-top">
+              <span class="metric-label">${UI.escapeHtml(c.label)}</span>
+              <div class="metric-icon ${c.color}">${Components.icon(c.icon)}</div>
+            </div>
+            <div class="metric-value">${UI.escapeHtml(String(c.value))}</div>
+          </div>
+        `).join('');
+      }
+
+      function renderBranchCounts(data) {
+        const list = AdminCommon.unwrapList(
+          data.branch_counts || data.branchCounts || data.branch_comparison || data.branchComparison || data.branches,
+          ['data', 'items']
+        );
+        const container = document.getElementById('branch-counts-list');
+        if (!list.length) {
+          container.innerHTML = '<span style="font-size:var(--fs-xs);color:var(--muted)">No branch breakdown available</span>';
+          return;
+        }
+        container.innerHTML = list.map(b => {
+          const name = b.branch_name || b.name || b.label || 'Branch';
+          const count = b.booking_count ?? b.count ?? b.bookings ?? 0;
+          const rev = b.revenue ?? b.total_revenue;
+          return `
+            <div class="badge badge-blue" style="padding:6px 12px;gap:8px;font-size:var(--fs-xs)">
+              <span>${UI.escapeHtml(name)}: <strong>${count}</strong></span>
+              ${rev !== undefined ? `<span style="opacity:0.8">(${UI.formatCurrency(rev)})</span>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      /* ─── Canvas Chart Helpers (Retina-ready, Pure Canvas) ─── */
+      function setupCanvas(canvas) {
+        const wrap = canvas.parentElement;
+        const rect = wrap.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const w = Math.max(280, rect.width || 400);
+        const h = Math.max(200, rect.height || 250);
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        return { ctx, w, h };
+      }
+
+      function drawEmptyChart(ctx, w, h, text = 'No data for selected range') {
+        ctx.fillStyle = '#64748B';
+        ctx.font = '500 13px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, w / 2, h / 2);
+      }
+
+      function drawBarChart(canvasId, items) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const { ctx, w, h } = setupCanvas(canvas);
+        if (!items.length) return drawEmptyChart(ctx, w, h);
+
+        const pad = { top: 20, right: 16, bottom: 36, left: 42 };
+        const plotW = w - pad.left - pad.right;
+        const plotH = h - pad.top - pad.bottom;
+        const maxVal = Math.max(1, ...items.map(i => Number(i.value) || 0));
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(20,99,197,0.10)';
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#64748B';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (let g = 0; g <= 4; g++) {
+          const y = pad.top + (plotH * g) / 4;
+          const val = Math.round(maxVal * (1 - g / 4));
+          ctx.beginPath();
+          ctx.moveTo(pad.left, y);
+          ctx.lineTo(w - pad.right, y);
+          ctx.stroke();
+          ctx.fillText(String(val), pad.left - 8, y);
+        }
+
+        const step = plotW / items.length;
+        const barW = Math.min(34, Math.max(8, step * 0.56));
+        const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+        grad.addColorStop(0, '#1463C5');
+        grad.addColorStop(1, '#60A5FA');
+
+        items.forEach((item, idx) => {
+          const val = Number(item.value) || 0;
+          const barH = (val / maxVal) * plotH;
+          const x = pad.left + idx * step + (step - barW) / 2;
+          const y = pad.top + plotH - barH;
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(x, y, barW, Math.max(barH, 2), [6, 6, 0, 0]);
+          } else {
+            ctx.rect(x, y, barW, Math.max(barH, 2));
+          }
+          ctx.fill();
+
+          if (items.length <= 12 || idx % Math.ceil(items.length / 8) === 0) {
+            ctx.fillStyle = '#64748B';
+            ctx.font = '10px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(String(item.label).slice(-5), x + barW / 2, pad.top + plotH + 8);
+          }
+        });
+      }
+
+      function drawLineChart(canvasId, items) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const { ctx, w, h } = setupCanvas(canvas);
+        if (!items.length) return drawEmptyChart(ctx, w, h);
+
+        const pad = { top: 20, right: 18, bottom: 36, left: 54 };
+        const plotW = w - pad.left - pad.right;
+        const plotH = h - pad.top - pad.bottom;
+        const maxVal = Math.max(100, ...items.map(i => Number(i.value) || 0));
+
+        ctx.strokeStyle = 'rgba(20,99,197,0.10)';
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#64748B';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (let g = 0; g <= 4; g++) {
+          const y = pad.top + (plotH * g) / 4;
+          const val = Math.round(maxVal * (1 - g / 4));
+          ctx.beginPath();
+          ctx.moveTo(pad.left, y);
+          ctx.lineTo(w - pad.right, y);
+          ctx.stroke();
+          ctx.fillText('₹' + val.toLocaleString('en-IN'), pad.left - 8, y);
+        }
+
+        const pts = items.map((item, idx) => {
+          const x = items.length === 1
+            ? pad.left + plotW / 2
+            : pad.left + (idx / (items.length - 1)) * plotW;
+          const y = pad.top + plotH - ((Number(item.value) || 0) / maxVal) * plotH;
+          return { x, y, label: item.label };
+        });
+
+        // Area fill
+        const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+        areaGrad.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
+        areaGrad.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pad.top + plotH);
+        pts.forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.lineTo(pts[pts.length - 1].x, pad.top + plotH);
+        ctx.closePath();
+        ctx.fillStyle = areaGrad;
+        ctx.fill();
+
+        // Line
+        ctx.beginPath();
+        pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Points & Labels
+        pts.forEach((p, idx) => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.strokeStyle = '#10B981';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          if (pts.length <= 10 || idx % Math.ceil(pts.length / 7) === 0) {
+            ctx.fillStyle = '#64748B';
+            ctx.font = '10px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(String(p.label).slice(-5), p.x, pad.top + plotH + 8);
+          }
+        });
+      }
+
+      function drawDonutChart(canvasId, legendId, items, colors) {
+        const canvas = document.getElementById(canvasId);
+        const legend = document.getElementById(legendId);
+        if (!canvas) return;
+        const { ctx, w, h } = setupCanvas(canvas);
+        const total = items.reduce((sum, i) => sum + (Number(i.value) || 0), 0);
+
+        if (!items.length || total === 0) {
+          if (legend) legend.innerHTML = '';
+          return drawEmptyChart(ctx, w, h);
+        }
+
+        const cx = w / 2;
+        const cy = h / 2;
+        const outerR = Math.min(w, h) * 0.38;
+        const innerR = outerR * 0.56;
+        let angle = -Math.PI / 2;
+
+        items.forEach((item, idx) => {
+          const val = Number(item.value) || 0;
+          if (val <= 0) return;
+          const slice = (val / total) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, outerR, angle, angle + slice);
+          ctx.arc(cx, cy, innerR, angle + slice, angle, true);
+          ctx.closePath();
+          ctx.fillStyle = colors[idx % colors.length];
+          ctx.fill();
+          angle += slice;
+        });
+
+        ctx.fillStyle = '#123B70';
+        ctx.font = '700 18px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(total), cx, cy - 6);
+        ctx.fillStyle = '#64748B';
+        ctx.font = '500 11px Inter, sans-serif';
+        ctx.fillText('Total', cx, cy + 12);
+
+        if (legend) {
+          legend.innerHTML = items.map((item, idx) => {
+            const pct = total ? Math.round(((Number(item.value) || 0) / total) * 100) : 0;
+            return `
+              <span class="chart-legend-item">
+                <span class="chart-legend-dot" style="background:${colors[idx % colors.length]}"></span>
+                <span>${UI.escapeHtml(item.label)}: <strong>${item.value}</strong> (${pct}%)</span>
+              </span>
+            `;
+          }).join('');
+        }
+      }
+
+      function renderCharts(data) {
+        const bookingTrendRaw = AdminCommon.unwrapList(
+          data.booking_trend || data.bookingTrend || data.bookings_trend || data.daily_trend,
+          ['data', 'items']
+        );
+        const bookingTrend = bookingTrendRaw.map(r => ({
+          label: r.date || r.label || r.day || '',
+          value: r.count ?? r.bookings ?? r.value ?? 0,
+        }));
+        drawBarChart('chart-bookings', bookingTrend);
+
+        const revenueTrendRaw = AdminCommon.unwrapList(
+          data.revenue_trend || data.revenueTrend || data.daily_revenue || data.daily_trend,
+          ['data', 'items']
+        );
+        const revenueTrend = revenueTrendRaw.map(r => ({
+          label: r.date || r.label || r.day || '',
+          value: r.revenue ?? r.amount ?? r.total_revenue ?? r.value ?? 0,
+        }));
+        drawLineChart('chart-revenue', revenueTrend);
+
+        const branchesRaw = AdminCommon.unwrapList(
+          data.branch_counts || data.branchCounts || data.branch_comparison || data.branchComparison || data.branches,
+          ['data', 'items']
+        );
+        const branchItems = branchesRaw.map(b => ({
+          label: b.branch_name || b.name || b.label || 'Branch',
+          value: b.booking_count ?? b.count ?? b.bookings ?? 0,
+        }));
+        drawDonutChart('chart-branches', 'legend-branches', branchItems, ['#1463C5', '#10B981', '#F59E0B', '#60A5FA']);
+
+        const typesRaw = data.appointment_types || data.appointmentTypes || data.appointment_split || [];
+        let typeItems = [];
+        if (Array.isArray(typesRaw)) {
+          typeItems = typesRaw.map(t => ({
+            label: (t.appointment_type || t.type || t.label || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            value: t.count ?? t.value ?? 0,
+          }));
+        } else if (typesRaw && typeof typesRaw === 'object') {
+          typeItems = [
+            { label: 'Branch Visit', value: typesRaw.branch_visit ?? typesRaw.branchVisit ?? 0 },
+            { label: 'Home Collection', value: typesRaw.home_collection ?? typesRaw.homeCollection ?? 0 },
+          ];
+        }
+        drawDonutChart('chart-types', 'legend-types', typeItems, ['#123B70', '#0EA5E9']);
+      }
+
+      function renderRecentBookings(data) {
+        const list = AdminCommon.unwrapList(
+          data.recent_bookings || data.recentBookings || data.bookings,
+          ['data', 'items']
+        );
+        const tbody = document.getElementById('recent-bookings-tbody');
+        const cards = document.getElementById('recent-bookings-cards');
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="7">${AdminCommon.emptyStateHTML('calendar', 'No recent bookings', 'Bookings will appear here as patients schedule tests.')}</td></tr>`;
+          cards.innerHTML = AdminCommon.emptyStateHTML('calendar', 'No recent bookings', 'Bookings will appear here as patients schedule tests.');
+          return;
+        }
+
+        tbody.innerHTML = list.map(b => `
+          <tr style="cursor:pointer" onclick="window.location.href='/admin/bookings.html?id=${encodeURIComponent(b.id || b.booking_id)}'">
+            <td><strong>${UI.escapeHtml(b.booking_id || String(b.id))}</strong></td>
+            <td>
+              <div style="font-weight:600">${UI.escapeHtml(b.patient_name || '—')}</div>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(b.patient_phone || '')}</div>
+            </td>
+            <td>${UI.escapeHtml(b.branch_name || b.branch || '—')}</td>
+            <td>
+              <div>${UI.formatDate(b.appointment_date)}</div>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml((b.appointment_type || '').replace(/_/g, ' '))}</div>
+            </td>
+            <td><strong>${UI.formatCurrency(b.total_amount || 0)}</strong></td>
+            <td>${AdminCommon.statusBadge(b.booking_status || b.status)}</td>
+            <td>${AdminCommon.paymentBadge(b.payment_status)}</td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(b => `
+          <div class="data-card" onclick="window.location.href='/admin/bookings.html?id=${encodeURIComponent(b.id || b.booking_id)}'" style="cursor:pointer">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(b.booking_id || String(b.id))}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(b.patient_name || '—')} · ${UI.escapeHtml(b.patient_phone || '')}</div>
+              </div>
+              ${AdminCommon.statusBadge(b.booking_status || b.status)}
+            </div>
+            <div class="data-card-meta">
+              <div>Branch<strong>${UI.escapeHtml(b.branch_name || b.branch || '—')}</strong></div>
+              <div>Date<strong>${UI.formatDate(b.appointment_date)}</strong></div>
+              <div>Amount<strong>${UI.formatCurrency(b.total_amount || 0)}</strong></div>
+              <div>Payment<div>${AdminCommon.paymentBadge(b.payment_status)}</div></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'dashboard',
+          title: 'Dashboard',
+          subtitle: 'Overview of bookings, revenue, and branch operations',
+        });
+
+        // Default custom date inputs
+        const today = new Date().toISOString().slice(0, 10);
+        document.getElementById('filter-from').value = today;
+        document.getElementById('filter-to').value = today;
+
+        document.querySelectorAll('#period-tabs .tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('#period-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentPeriod = btn.dataset.period;
+            const isCustom = currentPeriod === 'custom';
+            document.getElementById('custom-date-from-wrap').style.display = isCustom ? 'block' : 'none';
+            document.getElementById('custom-date-to-wrap').style.display = isCustom ? 'block' : 'none';
+            if (!isCustom) loadDashboard();
+          });
+        });
+
+        document.getElementById('filter-branch').addEventListener('change', loadDashboard);
+        document.getElementById('apply-filters-btn').addEventListener('click', loadDashboard);
+
+        window.addEventListener('resize', UI.debounce(() => {
+          if (lastDashboardData) renderCharts(lastDashboardData);
+        }, 200));
+
+        await loadBranches();
+        await loadDashboard();
+      });
+    })();
+  </script>
+</body>
+</html>

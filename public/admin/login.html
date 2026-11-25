@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Ranchi Pathology</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <main class="admin-login-page">
+    <div class="glass-card-static login-card fade-in">
+      <div class="login-brand">
+        <div id="login-logo"></div>
+        <div>
+          <h1>Ranchi Pathology</h1>
+          <p id="auth-subtitle">Sign in to the Admin Console</p>
+        </div>
+      </div>
+
+      <div id="auth-error-box" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--danger);padding:12px 14px;border-radius:var(--radius-md);font-size:var(--fs-sm);margin-bottom:1rem"></div>
+
+      <!-- Login Form -->
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-username">Username</label>
+          <input type="text" id="login-username" class="form-input" placeholder="Enter admin username" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">
+          Sign In
+        </button>
+        <div style="text-align:center;margin-top:1.25rem;display:flex;justify-content:space-between;align-items:center;font-size:var(--fs-xs)">
+          <a href="/" style="color:var(--muted)">Back to Website</a>
+          <button type="button" id="show-setup-btn" style="background:none;border:none;color:var(--blue);font-weight:600;font-size:var(--fs-xs)">
+            Initial Admin Setup
+          </button>
+        </div>
+      </form>
+
+      <!-- Initial Setup Form (shown when no admin exists) -->
+      <form id="setup-form" style="display:none">
+        <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-md);padding:10px 12px;font-size:var(--fs-xs);color:var(--navy);margin-bottom:1rem">
+          No administrator account configured yet. Create the initial super admin account below.
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setup-display-name">Display Name</label>
+          <input type="text" id="setup-display-name" class="form-input" placeholder="e.g. Lab Administrator" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setup-username">Username</label>
+          <input type="text" id="setup-username" class="form-input" placeholder="e.g. admin" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setup-email">Email (Optional)</label>
+          <input type="email" id="setup-email" class="form-input" placeholder="admin@ranchipathology.in">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setup-password">Password (min 8 chars)</label>
+          <input type="password" id="setup-password" class="form-input" placeholder="Create strong password" minlength="8" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setup-confirm">Confirm Password</label>
+          <input type="password" id="setup-confirm" class="form-input" placeholder="Re-enter password" minlength="8" required>
+        </div>
+        <button type="submit" id="setup-submit-btn" class="btn btn-primary btn-block">
+          Create Admin Account
+        </button>
+        <div style="text-align:center;margin-top:1rem">
+          <button type="button" id="show-login-btn" style="background:none;border:none;color:var(--blue);font-weight:600;font-size:var(--fs-xs)">
+            Back to Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('login-logo').innerHTML = Components.logoSVG(48);
+
+      // If already authenticated, go straight to dashboard
+      const existingToken = sessionStorage.getItem('rp_admin_token');
+      if (existingToken) {
+        try {
+          await API.get('/admin/me');
+          window.location.replace('/admin/dashboard.html');
+          return;
+        } catch {
+          sessionStorage.removeItem('rp_admin_token');
+        }
+      }
+
+      const loginForm = document.getElementById('login-form');
+      const setupForm = document.getElementById('setup-form');
+      const subtitle = document.getElementById('auth-subtitle');
+      const errorBox = document.getElementById('auth-error-box');
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+      }
+
+      function clearError() {
+        errorBox.style.display = 'none';
+        errorBox.textContent = '';
+      }
+
+      function switchMode(mode) {
+        clearError();
+        if (mode === 'setup') {
+          loginForm.style.display = 'none';
+          setupForm.style.display = 'block';
+          subtitle.textContent = 'Initial Super Admin Setup';
+        } else {
+          setupForm.style.display = 'none';
+          loginForm.style.display = 'block';
+          subtitle.textContent = 'Sign in to the Admin Console';
+        }
+      }
+
+      document.getElementById('show-setup-btn').addEventListener('click', () => switchMode('setup'));
+      document.getElementById('show-login-btn').addEventListener('click', () => switchMode('login'));
+
+      // Check if setup is needed via public settings or setup status
+      try {
+        const pub = await API.get('/settings/public');
+        if (pub && (pub.needs_setup === true || pub.needsSetup === true || pub.has_admin === false)) {
+          switchMode('setup');
+        }
+      } catch {
+        // Ignore if not provided
+      }
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('login-submit-btn');
+
+        if (!username || !password) {
+          showError('Please enter both username and password.');
+          return;
+        }
+
+        UI.setButtonLoading(btn, true);
+        try {
+          const res = await API.post('/admin/login', { username, password });
+          const token = res.token || res.access_token;
+          if (!token) throw { message: 'Invalid server response: missing token' };
+          sessionStorage.setItem('rp_admin_token', token);
+          UI.toast('Login successful', 'success');
+          window.location.replace('/admin/dashboard.html');
+        } catch (err) {
+          const msg = err.message || 'Invalid credentials';
+          if (err.data?.needs_setup || /no admin|setup/i.test(msg)) {
+            switchMode('setup');
+            UI.toast('No admin account found. Please complete initial setup.', 'info');
+          } else {
+            showError(msg);
+            UI.toast(msg, 'error');
+          }
+        } finally {
+          UI.setButtonLoading(btn, false);
+        }
+      });
+
+      setupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        const display_name = document.getElementById('setup-display-name').value.trim();
+        const username = document.getElementById('setup-username').value.trim();
+        const email = document.getElementById('setup-email').value.trim();
+        const password = document.getElementById('setup-password').value;
+        const confirm = document.getElementById('setup-confirm').value;
+        const btn = document.getElementById('setup-submit-btn');
+
+        if (password.length < 8) {
+          showError('Password must be at least 8 characters long.');
+          return;
+        }
+        if (password !== confirm) {
+          showError('Passwords do not match.');
+          return;
+        }
+
+        UI.setButtonLoading(btn, true);
+        try {
+          const res = await API.post('/admin/setup', {
+            username,
+            password,
+            display_name: display_name || username,
+            email: email || undefined,
+          });
+          const token = res.token || res.access_token;
+          if (token) {
+            sessionStorage.setItem('rp_admin_token', token);
+            UI.toast('Admin account created! Redirecting...', 'success');
+            window.location.replace('/admin/dashboard.html');
+          } else {
+            UI.toast('Admin account created! Please sign in.', 'success');
+            switchMode('login');
+          }
+        } catch (err) {
+          const msg = err.message || 'Setup failed';
+          showError(msg);
+          UI.toast(msg, 'error');
+        } finally {
+          UI.setButtonLoading(btn, false);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

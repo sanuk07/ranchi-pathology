@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Checkup Packages — Ranchi Pathology</title>
+  <meta name="description" content="Explore affordable full body checkups, diabetes profiles, cardiac care, and thyroid health packages at Ranchi Pathology. Fast reports and free home sample collection.">
+  <meta name="keywords" content="health checkup package ranchi, full body checkup jharkhand, diabetes package lohardaga, master health checkup chandwa, blood test packages">
+  <meta property="og:title" content="Health Checkup Packages — Ranchi Pathology">
+  <meta property="og:description" content="Preventive wellness health packages with up to 40% discount. Comprehensive parameters with doorstep sample collection.">
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content {
+      padding-top: 88px;
+      padding-bottom: var(--space-16);
+      min-height: calc(100vh - 350px);
+    }
+    .packages-header {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-6);
+    }
+    .packages-header h1 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+      letter-spacing: -0.02em;
+    }
+    .packages-header p {
+      color: var(--muted);
+      font-size: var(--fs-base);
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Trust Highlights Row */
+    .trust-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+    .trust-pill {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(20, 99, 197, 0.1);
+      border-radius: var(--radius-md);
+      font-size: var(--fs-sm);
+      color: var(--dark-text);
+      font-weight: 500;
+    }
+    .trust-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: rgba(20, 99, 197, 0.1);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Package Card Styling */
+    .package-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      transition: var(--transition);
+      height: 100%;
+    }
+    .package-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glass-shadow-lg);
+      border-color: rgba(20, 99, 197, 0.28);
+    }
+    .package-card.highlight {
+      border: 2px solid var(--blue);
+      background: linear-gradient(180deg, rgba(20, 99, 197, 0.04) 0%, rgba(255, 255, 255, 0.8) 100%);
+    }
+    .popular-tag {
+      position: absolute;
+      top: -12px;
+      right: 24px;
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 12px rgba(20, 99, 197, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pkg-top {
+      margin-bottom: var(--space-4);
+    }
+    .pkg-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+    .pkg-title {
+      font-size: var(--fs-xl);
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+    .pkg-badge {
+      flex-shrink: 0;
+    }
+    .pkg-desc {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+    }
+
+    /* Included Tests Box */
+    .included-tests-container {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(20, 99, 197, 0.08);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .included-tests-header {
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .included-test-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .included-test-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--fs-sm);
+      color: var(--dark-text);
+    }
+    .test-check-icon {
+      color: var(--success);
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+    .included-test-name {
+      flex: 1;
+      font-weight: 500;
+    }
+    .test-extra-count {
+      display: inline-block;
+      margin-top: var(--space-2);
+      font-size: var(--fs-xs);
+      color: var(--blue);
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .test-extra-count:hover {
+      text-decoration: underline;
+    }
+    .test-extra-list {
+      display: none;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px dashed rgba(20, 99, 197, 0.15);
+    }
+    .test-extra-list.open {
+      display: flex;
+    }
+
+    /* Pricing Section */
+    .pkg-bottom {
+      border-top: 1px solid rgba(20, 99, 197, 0.1);
+      padding-top: var(--space-4);
+      margin-top: auto;
+    }
+    .pkg-price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+    .pkg-current-price {
+      font-size: var(--fs-2xl);
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .pkg-old-price-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .pkg-original-price {
+      font-size: var(--fs-base);
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+    .pkg-discount-pill {
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.12);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    /* Floating Cart Summary Bar */
+    .cart-summary-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 990;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(20, 99, 197, 0.15);
+      box-shadow: 0 -8px 32px rgba(20, 70, 130, 0.15);
+      padding: var(--space-3) 0;
+      transform: translateY(110%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cart-summary-bar.visible {
+      transform: translateY(0);
+    }
+    .cart-summary-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .cart-summary-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .cart-icon-badge {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cart-icon-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--danger);
+      color: var(--white);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      border: 2px solid var(--white);
+    }
+    .cart-summary-text h4 {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .cart-summary-text p {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+
+    /* Skeleton Loading */
+    .skeleton-pkg {
+      height: 380px;
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+    }
+
+    @media (max-width: 768px) {
+      .package-card {
+        padding: var(--space-4);
+      }
+      .cart-summary-inner {
+        flex-direction: row;
+        gap: var(--space-2);
+      }
+      .cart-summary-text p {
+        display: none;
+      }
+      .pkg-footer {
+        flex-wrap: wrap;
+        gap: var(--space-3);
+      }
+      .pkg-footer .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <div class="container">
+
+      <!-- Header Section -->
+      <section class="packages-header fade-in">
+        <span class="badge badge-green" style="margin-bottom: var(--space-2);">
+          Preventive Healthcare &amp; Wellness
+        </span>
+        <h1>Health Checkup Packages</h1>
+        <p>Expertly curated test bundles providing comprehensive health insights at discounted package rates. Choose branch testing or doorstep sample collection.</p>
+      </section>
+
+      <!-- Trust Strip -->
+      <section class="trust-strip fade-in">
+        <div class="trust-pill">
+          <div class="trust-icon-box" id="trust-icon-1"></div>
+          <div>
+            <strong>Doorstep Collection</strong>
+            <div style="font-size:0.75rem;color:var(--muted)">At your home or office</div>
+          </div>
+        </div>
+        <div class="trust-pill">
+          <div class="trust-icon-box" id="trust-icon-2"></div>
+          <div>
+            <strong>Quality Care</strong>
+            <div style="font-size:0.75rem;color:var(--muted)">Structured processing</div>
+          </div>
+        </div>
+        <div class="trust-pill">
+          <div class="trust-icon-box" id="trust-icon-3"></div>
+          <div>
+            <strong>Fast Turnaround</strong>
+            <div style="font-size:0.75rem;color:var(--muted)">Reports in 6 to 24 hrs</div>
+          </div>
+        </div>
+        <div class="trust-pill">
+          <div class="trust-icon-box" id="trust-icon-4"></div>
+          <div>
+            <strong>Smart Savings</strong>
+            <div style="font-size:0.75rem;color:var(--muted)">Save up to 40% vs single tests</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Packages Grid / Loading / Empty -->
+      <section id="packages-section" aria-live="polite">
+        <div class="grid grid-3" id="packages-grid">
+          <!-- Skeletons rendered by default -->
+          <div class="glass-card-static skeleton-pkg skeleton"></div>
+          <div class="glass-card-static skeleton-pkg skeleton"></div>
+          <div class="glass-card-static skeleton-pkg skeleton"></div>
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="packages-empty-state" class="glass-card empty-state" style="display: none;">
+          <div id="empty-pkg-icon-slot"></div>
+          <h3 id="empty-title">No Packages Currently Available</h3>
+          <p id="empty-desc">Health packages are currently updating. You can still browse our complete diagnostic test catalogue.</p>
+          <a href="/tests.html" class="btn btn-primary">
+            <span>Browse All Tests</span>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Floating Cart Summary Bar -->
+  <aside class="cart-summary-bar" id="floating-cart-bar" aria-label="Booking Cart Summary">
+    <div class="container">
+      <div class="cart-summary-inner">
+        <div class="cart-summary-info">
+          <div class="cart-icon-badge" id="cart-bar-icon-slot">
+            <span class="cart-icon-count" id="cart-bar-count">0</span>
+          </div>
+          <div class="cart-summary-text">
+            <h4><span id="cart-bar-items-label">0 items</span> &bull; <span id="cart-bar-total" style="color:var(--navy);font-weight:800;">₹0</span></h4>
+            <p>Ready to choose branch / home visit and book slot</p>
+          </div>
+        </div>
+        <div class="cart-summary-actions">
+          <a href="/booking.html" class="btn btn-primary" id="cart-bar-checkout-btn">
+            <span>Proceed to Book</span>
+            <span id="cart-btn-arrow-slot"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="footer"></div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+
+  <script>
+    // Initialize Navbar & Footer
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('packages');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    // Rebind mobile menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.onclick = () => mobileMenu.classList.add('open');
+      if (mobileMenuClose) mobileMenuClose.onclick = () => mobileMenu.classList.remove('open');
+      mobileMenu.onclick = (e) => { if (e.target === mobileMenu) mobileMenu.classList.remove('open'); };
+    }
+
+    // Populate Trust Icons & General Icons
+    document.getElementById('trust-icon-1').innerHTML = Components.icon('truck');
+    document.getElementById('trust-icon-2').innerHTML = Components.icon('shield');
+    document.getElementById('trust-icon-3').innerHTML = Components.icon('clock');
+    document.getElementById('trust-icon-4').innerHTML = Components.icon('tag');
+    document.getElementById('empty-pkg-icon-slot').innerHTML = Components.icon('package');
+    document.getElementById('cart-bar-icon-slot').insertAdjacentHTML('afterbegin', Components.icon('package'));
+    document.getElementById('cart-btn-arrow-slot').innerHTML = Components.icon('arrowRight');
+
+    // Demo Mode Detection
+    API.get('/settings/public').then(res => {
+      const env = res.environment || (res.settings && res.settings.environment);
+      if (env === 'demo') {
+        const b = document.getElementById('demo-banner-container');
+        if (b) b.innerHTML = '<div class="demo-banner">DEMO MODE — Sample data & simulated workflows active</div>';
+      }
+    }).catch(() => {});
+
+    // State Management
+    const state = {
+      packages: [],
+      cart: []
+    };
+
+    // Cart Management
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('rp_cart');
+        const parsed = raw ? JSON.parse(raw) : [];
+        state.cart = Array.isArray(parsed) ? parsed.filter(i => i && i.id && i.type) : [];
+      } catch (_) {
+        state.cart = [];
+      }
+    }
+
+    function saveCart() {
+      localStorage.setItem('rp_cart', JSON.stringify(state.cart));
+      updateFloatingCart();
+    }
+
+    function isPackageInCart(pkgId) {
+      return state.cart.some(i => i.type === 'package' && Number(i.id) === Number(pkgId));
+    }
+
+    function bookPackage(pkg) {
+      const id = Number(pkg.id);
+      const effectivePrice = Number(pkg.offer_price || pkg.price || 0);
+      const existingIdx = state.cart.findIndex(i => i.type === 'package' && Number(i.id) === id);
+
+      if (existingIdx >= 0) {
+        // Toggle removal or confirm redirect
+        UI.confirm(
+          `"${pkg.name}" is already in your booking cart. Would you like to proceed to booking now?`,
+          () => { window.location.href = '/booking.html'; },
+          'Already in Cart'
+        );
+      } else {
+        state.cart.push({
+          type: 'package',
+          id: id,
+          name: pkg.name,
+          price: effectivePrice
+        });
+        saveCart();
+        UI.toast(`"${pkg.name}" added to your booking!`, 'success');
+        renderPackages();
+
+        // Prompt or give immediate access
+        setTimeout(() => {
+          UI.confirm(
+            `"${pkg.name}" has been added to your cart. Proceed to select appointment date & time now?`,
+            () => { window.location.href = '/booking.html'; },
+            'Package Booked'
+          );
+        }, 300);
+      }
+    }
+
+    function updateFloatingCart() {
+      const bar = document.getElementById('floating-cart-bar');
+      const countEl = document.getElementById('cart-bar-count');
+      const itemsLabel = document.getElementById('cart-bar-items-label');
+      const totalEl = document.getElementById('cart-bar-total');
+
+      const totalItems = state.cart.length;
+      if (totalItems > 0) {
+        const totalPrice = state.cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        countEl.textContent = totalItems;
+        itemsLabel.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'} selected`;
+        totalEl.textContent = UI.formatCurrency(totalPrice);
+        bar.classList.add('visible');
+      } else {
+        bar.classList.remove('visible');
+      }
+    }
+
+    // Render Packages Cards
+    function renderPackages() {
+      const grid = document.getElementById('packages-grid');
+      const emptyState = document.getElementById('packages-empty-state');
+
+      if (state.packages.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = state.packages.map((pkg, idx) => {
+        const inCart = isPackageInCart(pkg.id);
+        const originalPrice = Number(pkg.original_price || 0);
+        const offerPrice = Number(pkg.offer_price || pkg.price || 0);
+        const savingsAmount = Math.max(0, originalPrice - offerPrice);
+        const savingsPercent = originalPrice > 0 ? Math.round((savingsAmount / originalPrice) * 100) : (pkg.discount_percent || 0);
+
+        const tests = Array.isArray(pkg.tests) ? pkg.tests : [];
+        const testCount = pkg.test_count || tests.length;
+        const visibleTests = tests.slice(0, 4);
+        const extraTests = tests.slice(4);
+
+        // Highlight the most popular or highest value package
+        const isHighlight = idx === 0 || pkg.slug === 'full-body-checkup';
+
+        return `
+          <article class="glass-card package-card fade-in ${isHighlight ? 'highlight' : ''}" data-pkg-id="${pkg.id}">
+            ${isHighlight ? `<div class="popular-tag">Most Popular</div>` : ''}
+
+            <div class="pkg-top">
+              <div class="pkg-header-row">
+                <h2 class="pkg-title">${UI.escapeHtml(pkg.name)}</h2>
+                <span class="badge badge-blue pkg-badge">${testCount} ${testCount === 1 ? 'Test' : 'Tests'}</span>
+              </div>
+
+              <p class="pkg-desc">${UI.escapeHtml(pkg.description || 'Comprehensive clinical laboratory package designed for accurate diagnostics.')}</p>
+
+              <div class="included-tests-container">
+                <div class="included-tests-header">
+                  <span>Tests Included</span>
+                  <span style="color:var(--muted)">${testCount} Tests</span>
+                </div>
+
+                <div class="included-test-list">
+                  ${visibleTests.map(t => `
+                    <div class="included-test-item">
+                      <span class="test-check-icon">${Components.icon('check')}</span>
+                      <span class="included-test-name">${UI.escapeHtml(t.name)}</span>
+                    </div>
+                  `).join('')}
+
+                  ${extraTests.length > 0 ? `
+                    <div class="test-extra-list" id="extra-tests-${pkg.id}">
+                      ${extraTests.map(t => `
+                        <div class="included-test-item">
+                          <span class="test-check-icon">${Components.icon('check')}</span>
+                          <span class="included-test-name">${UI.escapeHtml(t.name)}</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                    <div class="test-extra-count" onclick="toggleExtraTests(${pkg.id}, this)">
+                      + Show ${extraTests.length} more included tests
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="pkg-bottom">
+              <div class="pkg-price-row">
+                <div>
+                  <div class="pkg-current-price">${UI.formatCurrency(offerPrice)}</div>
+                </div>
+                ${originalPrice > offerPrice ? `
+                  <div class="pkg-old-price-wrap">
+                    <span class="pkg-original-price">${UI.formatCurrency(originalPrice)}</span>
+                    <span class="pkg-discount-pill">${savingsPercent}% OFF</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <button type="button" class="btn ${inCart ? 'btn-secondary' : 'btn-primary'} btn-block btn-book-pkg" data-id="${pkg.id}">
+                ${inCart ? `${Components.icon('check')} <span>Package In Cart</span>` : `${Components.icon('package')} <span>Book Package</span>`}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Attach Book Package handlers
+      grid.querySelectorAll('.btn-book-pkg').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.id);
+          const pkgObj = state.packages.find(p => Number(p.id) === id);
+          if (pkgObj) bookPackage(pkgObj);
+        });
+      });
+    }
+
+    // Toggle expand extra tests in card
+    window.toggleExtraTests = function(pkgId, toggleEl) {
+      const extraList = document.getElementById(`extra-tests-${pkgId}`);
+      if (!extraList) return;
+      const isOpen = extraList.classList.toggle('open');
+      const count = extraList.children.length;
+      toggleEl.textContent = isOpen ? '- Hide extra tests' : `+ Show ${count} more included tests`;
+    };
+
+    // Initial Fetch & Boot
+    async function init() {
+      loadCart();
+      updateFloatingCart();
+
+      try {
+        const res = await API.get('/packages');
+        const list = Array.isArray(res) ? res : (res.packages || []);
+        state.packages = list;
+        renderPackages();
+      } catch (err) {
+        const grid = document.getElementById('packages-grid');
+        grid.style.display = 'none';
+        const emptyState = document.getElementById('packages-empty-state');
+        emptyState.style.display = 'block';
+        document.getElementById('empty-title').textContent = 'Unable to Load Packages';
+        document.getElementById('empty-desc').textContent = 'A network issue occurred while loading packages. Please verify your connection or browse our tests.';
+        UI.toast('Failed to load packages', 'error');
+      }
+    }
+
+    // Run on script load
+    init();
+  </script>
+</body>
+</html>

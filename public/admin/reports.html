@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports Management — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <!-- Upload Report Card -->
+        <section class="glass-card-static fade-in" style="margin-bottom:var(--space-6)">
+          <h2 style="font-size:var(--fs-lg);font-weight:700;color:var(--navy);margin-bottom:var(--space-4)">Upload Medical Report</h2>
+          <form id="upload-form">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="r-booking">Select Booking *</label>
+                <select id="r-booking" class="form-input" required>
+                  <option value="">Loading bookings...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="r-title">Report Title *</label>
+                <input type="text" id="r-title" class="form-input" placeholder="e.g. Complete Blood Count & Lipid Profile" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="r-file">Report File (PDF, JPG, PNG — Max 10MB) *</label>
+              <input type="file" id="r-file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-4)">
+              <label class="switch-label">
+                <input type="checkbox" id="r-available" class="switch-input" checked>
+                <span>Mark as Available for Patient Download</span>
+              </label>
+              <button type="submit" class="btn btn-primary" id="r-submit-btn">Upload Report</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Uploaded Reports List -->
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">Uploaded Reports <span id="reports-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="report-search" class="form-input" placeholder="Search title or booking..." style="min-height:36px;padding:6px 12px;font-size:var(--fs-sm);max-width:240px">
+              <button type="button" class="btn btn-secondary btn-sm" id="reports-refresh-btn">Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Booking</th>
+                  <th>Patient</th>
+                  <th>File</th>
+                  <th>Availability</th>
+                  <th>Uploaded</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reports-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">Loading reports...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="reports-cards"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Replace Report Modal -->
+  <div class="modal-overlay" id="replace-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Replace Report</h3>
+        <button class="modal-close" data-close-modal="replace-modal">&times;</button>
+      </div>
+      <form id="replace-form">
+        <div class="modal-body">
+          <input type="hidden" id="rep-report-id">
+          <input type="hidden" id="rep-booking-id">
+          <div class="form-group">
+            <label class="form-label" for="rep-title">New Report Title *</label>
+            <input type="text" id="rep-title" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="rep-reason">Reason for Replacement *</label>
+            <input type="text" id="rep-reason" class="form-input" placeholder="e.g. Updated corrected lab values" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="rep-file">New File (PDF, JPG, PNG) *</label>
+            <input type="file" id="rep-file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="replace-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="rep-submit-btn">Replace Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let reports = [];
+
+      async function loadBookingOptions() {
+        try {
+          const res = await API.get('/admin/bookings?limit=100');
+          const list = AdminCommon.unwrapList(res, ['bookings', 'data', 'items']);
+          const sel = document.getElementById('r-booking');
+          sel.innerHTML = '<option value="">-- Select Booking --</option>' + list.map(b =>
+            `<option value="${b.id}">${UI.escapeHtml(b.booking_id || `#${b.id}`)} — ${UI.escapeHtml(b.patient_name || '')} (${UI.formatDate(b.appointment_date)})</option>`
+          ).join('');
+        } catch {
+          document.getElementById('r-booking').innerHTML = '<option value="">Unable to load bookings</option>';
+        }
+      }
+
+      async function loadReports() {
+        try {
+          const res = await API.get('/admin/reports');
+          reports = AdminCommon.unwrapList(res, ['reports', 'data', 'items']);
+          renderReports();
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load reports', 'error');
+        }
+      }
+
+      async function previewReport(reportId) {
+        const token = sessionStorage.getItem('rp_admin_token');
+        try {
+          const res = await fetch(`/api/reports/download/${reportId}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          if (!res.ok) throw new Error('Unable to fetch report file');
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank', 'noopener');
+        } catch (err) {
+          UI.toast(err.message || 'Preview failed', 'error');
+        }
+      }
+
+      function renderReports() {
+        const q = document.getElementById('report-search').value.trim().toLowerCase();
+        const list = reports.filter(r =>
+          !q
+          || (r.title || '').toLowerCase().includes(q)
+          || (r.booking_code || String(r.booking_id) || '').toLowerCase().includes(q)
+          || (r.patient_name || '').toLowerCase().includes(q)
+        );
+
+        document.getElementById('reports-count').textContent = String(list.length);
+        const tbody = document.getElementById('reports-tbody');
+        const cards = document.getElementById('reports-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('fileText', 'No reports uploaded', 'Use the form above to upload a diagnostic report.');
+          tbody.innerHTML = `<tr><td colspan="7">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        const fmtSize = (bytes) => bytes ? `${(bytes / 1024).toFixed(1)} KB` : '—';
+
+        tbody.innerHTML = list.map(r => `
+          <tr>
+            <td><strong>${UI.escapeHtml(r.title || r.file_name)}</strong></td>
+            <td>
+              <a href="/admin/bookings.html?id=${encodeURIComponent(r.booking_id)}" style="font-weight:600">
+                ${UI.escapeHtml(r.booking_code || `#${r.booking_id}`)}
+              </a>
+            </td>
+            <td>${UI.escapeHtml(r.patient_name || '—')}</td>
+            <td>
+              <div style="font-size:var(--fs-xs)">${UI.escapeHtml(r.file_name || '')}</div>
+              <div style="font-size:11px;color:var(--muted)">${fmtSize(r.file_size)}</div>
+            </td>
+            <td>
+              <span class="badge ${r.is_available ? 'badge-green' : 'badge-yellow'}">
+                ${r.is_available ? 'Available' : 'Pending Release'}
+              </span>
+            </td>
+            <td>${UI.formatDateTime(r.created_at)}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-secondary btn-sm preview-rep-btn" data-id="${r.id}">Preview</button>
+                <button class="btn btn-sm ${r.is_available ? 'btn-secondary' : 'btn-success'} toggle-avail-btn" data-id="${r.id}">
+                  ${r.is_available ? 'Hide' : 'Mark Available'}
+                </button>
+                <button class="btn btn-secondary btn-sm replace-rep-btn" data-id="${r.id}" data-booking="${r.booking_id}" data-title="${UI.escapeHtml(r.title || '')}">Replace</button>
+                <button class="btn btn-primary btn-sm notify-wa-btn" data-id="${r.id}" data-booking="${r.booking_id}">Notify WA</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(r => `
+          <div class="data-card">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(r.title || r.file_name)}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(r.booking_code || `#${r.booking_id}`)} · ${UI.escapeHtml(r.patient_name || '')}</div>
+              </div>
+              <span class="badge ${r.is_available ? 'badge-green' : 'badge-yellow'}">${r.is_available ? 'Available' : 'Pending'}</span>
+            </div>
+            <div class="data-card-meta">
+              <div>File<strong>${UI.escapeHtml(r.file_name || '—')}</strong></div>
+              <div>Uploaded<strong>${UI.formatDate(r.created_at)}</strong></div>
+            </div>
+            <div class="data-card-actions">
+              <button class="btn btn-secondary btn-sm preview-rep-btn" data-id="${r.id}">Preview</button>
+              <button class="btn btn-sm ${r.is_available ? 'btn-secondary' : 'btn-success'} toggle-avail-btn" data-id="${r.id}">
+                ${r.is_available ? 'Hide' : 'Mark Available'}
+              </button>
+              <button class="btn btn-secondary btn-sm replace-rep-btn" data-id="${r.id}" data-booking="${r.booking_id}" data-title="${UI.escapeHtml(r.title || '')}">Replace</button>
+              <button class="btn btn-primary btn-sm notify-wa-btn" data-id="${r.id}" data-booking="${r.booking_id}">Notify WA</button>
+            </div>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.preview-rep-btn').forEach(btn => {
+          btn.addEventListener('click', () => previewReport(btn.dataset.id));
+        });
+        document.querySelectorAll('.toggle-avail-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const rep = reports.find(x => String(x.id) === String(btn.dataset.id));
+            if (!rep) return;
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.patch(`/admin/reports/${rep.id}`, { is_available: rep.is_available ? 0 : 1 });
+              UI.toast(rep.is_available ? 'Report hidden from patient' : 'Report marked available', 'success');
+              await loadReports();
+            } catch (err) {
+              UI.toast(err.message || 'Update failed', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+        });
+        document.querySelectorAll('.replace-rep-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.getElementById('replace-form').reset();
+            document.getElementById('rep-report-id').value = btn.dataset.id;
+            document.getElementById('rep-booking-id').value = btn.dataset.booking;
+            document.getElementById('rep-title').value = btn.dataset.title;
+            UI.openModal('replace-modal');
+          });
+        });
+        document.querySelectorAll('.notify-wa-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/whatsapp/send-qr/${btn.dataset.booking}`, {
+                message_type: 'report_ready',
+                report_id: Number(btn.dataset.id),
+              });
+              UI.toast('WhatsApp notification triggered', 'success');
+            } catch (err) {
+              UI.toast(err.message || 'Failed to send WhatsApp notification', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'reports',
+          title: 'Reports Management',
+          subtitle: 'Upload, publish, replace, and notify patients about lab reports',
+        });
+
+        await Promise.all([loadBookingOptions(), loadReports()]);
+
+        document.getElementById('report-search').addEventListener('input', UI.debounce(renderReports, 200));
+        document.getElementById('reports-refresh-btn').addEventListener('click', loadReports);
+
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fileInput = document.getElementById('r-file');
+          if (!fileInput.files.length) return;
+          const fd = new FormData();
+          fd.append('booking_id', document.getElementById('r-booking').value);
+          fd.append('title', document.getElementById('r-title').value.trim());
+          fd.append('is_available', document.getElementById('r-available').checked ? '1' : '0');
+          fd.append('file', fileInput.files[0]);
+
+          const btn = document.getElementById('r-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.upload('/admin/reports/upload', fd);
+            UI.toast('Report uploaded successfully', 'success');
+            document.getElementById('upload-form').reset();
+            document.getElementById('r-available').checked = true;
+            await loadReports();
+          } catch (err) {
+            UI.toast(err.message || 'Upload failed', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        document.getElementById('replace-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fileInput = document.getElementById('rep-file');
+          if (!fileInput.files.length) return;
+          const fd = new FormData();
+          fd.append('booking_id', document.getElementById('rep-booking-id').value);
+          fd.append('replace_report_id', document.getElementById('rep-report-id').value);
+          fd.append('replace_reason', document.getElementById('rep-reason').value.trim());
+          fd.append('title', document.getElementById('rep-title').value.trim());
+          fd.append('is_available', '1');
+          fd.append('file', fileInput.files[0]);
+
+          const btn = document.getElementById('rep-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.upload('/admin/reports/upload', fd);
+            UI.toast('Report replaced successfully', 'success');
+            UI.closeModal('replace-modal');
+            await loadReports();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to replace report', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <!-- Status Banner Row -->
+        <div class="grid grid-2 fade-in" style="margin-bottom:var(--space-6)">
+          <div class="glass-card-static" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)">
+            <div>
+              <div style="font-size:var(--fs-xs);color:var(--muted);font-weight:600;text-transform:uppercase">Environment Mode</div>
+              <div style="font-size:var(--fs-lg);font-weight:700;color:var(--navy)" id="status-env-text">Loading...</div>
+            </div>
+            <span class="badge badge-yellow" id="status-env-badge">—</span>
+          </div>
+          <div class="glass-card-static" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)">
+            <div>
+              <div style="font-size:var(--fs-xs);color:var(--muted);font-weight:600;text-transform:uppercase">WhatsApp Cloud API</div>
+              <div style="font-size:var(--fs-lg);font-weight:700;color:var(--navy)" id="status-wa-text">Checking...</div>
+            </div>
+            <span class="badge badge-gray" id="status-wa-badge">—</span>
+          </div>
+        </div>
+
+        <form id="settings-form" class="glass-card-static fade-in">
+          <h2 style="font-size:var(--fs-lg);font-weight:700;color:var(--navy);margin-bottom:var(--space-4)">Business Information</h2>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="set-business-name">Business Name</label>
+              <input type="text" id="set-business-name" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-tagline">Tagline</label>
+              <input type="text" id="set-tagline" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-contact-phone">Primary Contact Phone</label>
+              <input type="text" id="set-contact-phone" class="form-input" placeholder="+91 ...">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-contact-email">Primary Contact Email</label>
+              <input type="email" id="set-contact-email" class="form-input" placeholder="info@ranchipathology.in">
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid rgba(20,99,197,0.1);margin:var(--space-6) 0">
+          <h2 style="font-size:var(--fs-lg);font-weight:700;color:var(--navy);margin-bottom:var(--space-4)">UPI Payment Settings</h2>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="set-upi-id">UPI ID *</label>
+              <input type="text" id="set-upi-id" class="form-input" placeholder="e.g. 6204522977@ptyes" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-upi-payee">Payee Name *</label>
+              <input type="text" id="set-upi-payee" class="form-input" placeholder="e.g. Ranchi Pathology" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-qr-validity">QR Validity (Minutes)</label>
+              <input type="number" id="set-qr-validity" class="form-input" min="5" value="1440">
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid rgba(20,99,197,0.1);margin:var(--space-6) 0">
+          <h2 style="font-size:var(--fs-lg);font-weight:700;color:var(--navy);margin-bottom:var(--space-4)">Bookings, Home Collection &amp; Reports</h2>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="set-booking-prefix">Booking ID Prefix</label>
+              <input type="text" id="set-booking-prefix" class="form-input" maxlength="6" value="RP">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-slot-cap">Default Slot Capacity</label>
+              <input type="number" id="set-slot-cap" class="form-input" min="1" value="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-hc-charge">Default Home Collection Charge (₹)</label>
+              <input type="number" id="set-hc-charge" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-max-report">Max Report File Size (MB)</label>
+              <input type="number" id="set-max-report" class="form-input" min="1" max="50" value="10">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-environment">Environment Mode</label>
+              <select id="set-environment" class="form-input">
+                <option value="demo">Demo Mode</option>
+                <option value="production">Production Mode</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px">
+              <label class="switch-label">
+                <input type="checkbox" id="set-notif-sound" class="switch-input" checked>
+                <span>Notification Sound Enabled</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)">
+            <a href="/admin/audit-logs.html" class="btn btn-secondary btn-sm">View Audit Logs</a>
+            <button type="submit" class="btn btn-primary" id="settings-save-btn">Save Settings</button>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      function toSettingsMap(res) {
+        const raw = res.settings || res.data || res;
+        if (Array.isArray(raw)) {
+          const map = {};
+          raw.forEach(row => { if (row.key) map[row.key] = row.value; });
+          return map;
+        }
+        return raw || {};
+      }
+
+      async function loadSettings() {
+        try {
+          const res = await API.get('/admin/settings');
+          const s = toSettingsMap(res);
+
+          document.getElementById('set-business-name').value = s.business_name || 'Ranchi Pathology';
+          document.getElementById('set-tagline').value = s.business_tagline || '';
+          document.getElementById('set-contact-phone').value = s.contact_phone || '';
+          document.getElementById('set-contact-email').value = s.contact_email || '';
+          document.getElementById('set-upi-id').value = s.upi_id || '';
+          document.getElementById('set-upi-payee').value = s.upi_payee_name || '';
+          document.getElementById('set-qr-validity').value = s.qr_validity_minutes || '1440';
+          document.getElementById('set-booking-prefix').value = s.booking_id_prefix || 'RP';
+          document.getElementById('set-slot-cap').value = s.default_slot_capacity || '5';
+          document.getElementById('set-hc-charge').value = s.home_collection_default_charge || '0';
+          document.getElementById('set-max-report').value = s.max_report_size_mb || '10';
+          document.getElementById('set-environment').value = (s.environment || 'demo').toLowerCase() === 'production' ? 'production' : 'demo';
+          document.getElementById('set-notif-sound').checked = String(s.notification_sound_enabled) !== 'false' && s.notification_sound_enabled !== '0';
+
+          const env = (res.runtime_environment || s.environment || 'demo').toLowerCase();
+          document.getElementById('status-env-text').textContent = env === 'production' ? 'Production (Live)' : 'Demo / Sandbox';
+          const envBadge = document.getElementById('status-env-badge');
+          envBadge.textContent = env.toUpperCase();
+          envBadge.className = `badge ${env === 'production' ? 'badge-green' : 'badge-yellow'}`;
+
+          const waConnected = res.whatsapp_connected === true || String(s.whatsapp_configured) === 'true';
+          document.getElementById('status-wa-text').textContent = waConnected ? 'Connected' : 'Not Configured (Simulated in Demo)';
+          const waBadge = document.getElementById('status-wa-badge');
+          waBadge.textContent = waConnected ? 'Connected' : 'Disconnected';
+          waBadge.className = `badge ${waConnected ? 'badge-green' : 'badge-gray'}`;
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load settings', 'error');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'settings',
+          title: 'Settings',
+          subtitle: 'Configure business details, UPI QR, booking defaults, and environment',
+        });
+
+        await loadSettings();
+
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('settings-save-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.put('/admin/settings', {
+              business_name: document.getElementById('set-business-name').value.trim(),
+              business_tagline: document.getElementById('set-tagline').value.trim(),
+              contact_phone: document.getElementById('set-contact-phone').value.trim(),
+              contact_email: document.getElementById('set-contact-email').value.trim(),
+              upi_id: document.getElementById('set-upi-id').value.trim(),
+              upi_payee_name: document.getElementById('set-upi-payee').value.trim(),
+              qr_validity_minutes: String(document.getElementById('set-qr-validity').value || 1440),
+              booking_id_prefix: document.getElementById('set-booking-prefix').value.trim().toUpperCase() || 'RP',
+              default_slot_capacity: String(document.getElementById('set-slot-cap').value || 5),
+              home_collection_default_charge: String(document.getElementById('set-hc-charge').value || 0),
+              max_report_size_mb: String(document.getElementById('set-max-report').value || 10),
+              environment: document.getElementById('set-environment').value,
+              notification_sound_enabled: document.getElementById('set-notif-sound').checked ? 'true' : 'false',
+            });
+            UI.toast('Settings saved successfully', 'success');
+            await loadSettings();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to save settings', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+name = "ranchi-pathology-api"
+main = "worker/index.js"
+compatibility_date = "2024-09-01"
+
+[vars]
+ENVIRONMENT = "demo"
+APP_NAME = "Ranchi Pathology"
+TIMEZONE = "Asia/Kolkata"
+CURRENCY = "INR"
+DEFAULT_UPI_ID = "6204522977@ptyes"
+DEFAULT_UPI_PAYEE = "sanu"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ranchi-pathology-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[r2_buckets]]
+binding = "REPORTS_BUCKET"
+bucket_name = "ranchi-pathology-reports"
+
+# Secret bindings (set via `wrangler secret put`)
+# ADMIN_JWT_SECRET - JWT signing secret
+# WHATSAPP_ACCESS_TOKEN - Meta WhatsApp API token
+# WHATSAPP_PHONE_NUMBER_ID - WhatsApp phone number ID
+# WHATSAPP_BUSINESS_ACCOUNT_ID - WhatsApp business account ID
+# WHATSAPP_VERIFY_TOKEN - Webhook verification token
+# WHATSAPP_APP_SECRET - App secret for signature verification

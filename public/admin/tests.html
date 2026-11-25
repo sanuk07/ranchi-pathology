@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tests Management — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="admin-toolbar">
+          <div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-secondary btn-sm" id="add-category-btn">New Category</button>
+            <button type="button" class="btn btn-primary btn-sm" id="add-test-btn">Add Test</button>
+          </div>
+        </div>
+
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field" style="flex:2;min-width:220px">
+              <label for="test-search">Search Tests</label>
+              <input type="text" id="test-search" class="form-input" placeholder="Search by test name or code...">
+            </div>
+            <div class="filter-field">
+              <label for="test-cat-filter">Category</label>
+              <select id="test-cat-filter" class="form-input">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="test-status-filter">Status</label>
+              <select id="test-status-filter" class="form-input">
+                <option value="">All</option>
+                <option value="1">Active Only</option>
+                <option value="0">Inactive Only</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">Diagnostic Tests <span id="tests-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Test Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Sample &amp; Prep</th>
+                  <th>Report Time</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tests-tbody">
+                <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Loading tests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="tests-cards"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add / Edit Test Modal -->
+  <div class="modal-overlay" id="test-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="test-modal-title">Add New Test</h3>
+        <button class="modal-close" data-close-modal="test-modal">&times;</button>
+      </div>
+      <form id="test-form">
+        <div class="modal-body">
+          <input type="hidden" id="t-id">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="t-code">Test Code *</label>
+              <input type="text" id="t-code" class="form-input" placeholder="e.g. CBC001" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="t-category">Category *</label>
+              <select id="t-category" class="form-input" required></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="t-name">Test Name *</label>
+            <input type="text" id="t-name" class="form-input" placeholder="e.g. Complete Blood Count (CBC)" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="t-desc">Description</label>
+            <textarea id="t-desc" class="form-input" placeholder="Brief test details for patients..."></textarea>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="t-price">Price (₹) *</label>
+              <input type="number" id="t-price" class="form-input" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="t-discount-price">Discounted Price (₹)</label>
+              <input type="number" id="t-discount-price" class="form-input" min="0" step="0.01" placeholder="Optional">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="t-report-time">Report Time *</label>
+              <input type="text" id="t-report-time" class="form-input" value="24 hours" required>
+            </div>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="t-sample">Sample Type *</label>
+              <select id="t-sample" class="form-input">
+                <option value="Blood">Blood</option>
+                <option value="Urine">Urine</option>
+                <option value="Stool">Stool</option>
+                <option value="Swab">Swab</option>
+                <option value="Sputum">Sputum</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="t-fasting-hours">Fasting Hours</label>
+              <input type="number" id="t-fasting-hours" class="form-input" min="0" max="24" placeholder="e.g. 8">
+            </div>
+            <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding-bottom:6px">
+              <label class="switch-label">
+                <input type="checkbox" id="t-fasting" class="switch-input">
+                <span>Fasting Required</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="t-prep">Preparation Instructions</label>
+            <input type="text" id="t-prep" class="form-input" value="No special preparation required">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Branch Availability</label>
+            <div class="checkbox-pills" id="t-branches-box"></div>
+          </div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <label class="switch-label">
+              <input type="checkbox" id="t-home" class="switch-input" checked>
+              <span>Home Collection Available</span>
+            </label>
+            <label class="switch-label">
+              <input type="checkbox" id="t-active" class="switch-input" checked>
+              <span>Active</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="test-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="t-submit-btn">Save Test</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Test Category</h3>
+        <button class="modal-close" data-close-modal="category-modal">&times;</button>
+      </div>
+      <form id="category-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="c-name">Category Name *</label>
+            <input type="text" id="c-name" class="form-input" placeholder="e.g. Vitamin Tests" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="c-desc">Description</label>
+            <textarea id="c-desc" class="form-input" placeholder="Category description..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="category-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="c-submit-btn">Create Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let allTests = [];
+      let categories = [];
+      let branches = [];
+
+      async function loadMetadata() {
+        const [catRes, brRes] = await Promise.all([
+          API.get('/categories').catch(() => []),
+          API.get('/branches').catch(() => []),
+        ]);
+        categories = AdminCommon.unwrapList(catRes, ['categories', 'data']);
+        branches = AdminCommon.unwrapList(brRes, ['branches', 'data']);
+
+        const filterCat = document.getElementById('test-cat-filter');
+        const formCat = document.getElementById('t-category');
+        filterCat.innerHTML = '<option value="">All Categories</option>';
+        formCat.innerHTML = '';
+        categories.forEach(c => {
+          filterCat.innerHTML += `<option value="${c.id}">${UI.escapeHtml(c.name)}</option>`;
+          formCat.innerHTML += `<option value="${c.id}">${UI.escapeHtml(c.name)}</option>`;
+        });
+
+        const brBox = document.getElementById('t-branches-box');
+        brBox.innerHTML = branches.map(b => `
+          <label class="checkbox-pill">
+            <input type="checkbox" name="t-branch" value="${b.id}" checked>
+            <span>${UI.escapeHtml(b.name)}</span>
+          </label>
+        `).join('');
+      }
+
+      async function loadTests() {
+        try {
+          const res = await API.get('/tests?include_inactive=1&all=1&limit=500');
+          allTests = AdminCommon.unwrapList(res, ['tests', 'data', 'items']);
+          applyFilters();
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load tests', 'error');
+        }
+      }
+
+      function applyFilters() {
+        const q = document.getElementById('test-search').value.trim().toLowerCase();
+        const catId = document.getElementById('test-cat-filter').value;
+        const st = document.getElementById('test-status-filter').value;
+
+        const filtered = allTests.filter(t => {
+          if (q && !(t.name || '').toLowerCase().includes(q) && !(t.test_code || '').toLowerCase().includes(q)) return false;
+          if (catId && String(t.category_id) !== String(catId)) return false;
+          if (st !== '' && String(t.is_active ? 1 : 0) !== st) return false;
+          return true;
+        });
+
+        document.getElementById('tests-count').textContent = String(filtered.length);
+        renderTests(filtered);
+      }
+
+      function getCategoryName(t) {
+        if (t.category_name) return t.category_name;
+        const c = categories.find(x => String(x.id) === String(t.category_id));
+        return c ? c.name : '—';
+      }
+
+      function renderTests(list) {
+        const tbody = document.getElementById('tests-tbody');
+        const cards = document.getElementById('tests-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('flask', 'No tests found', 'Add a new diagnostic test or adjust your filters.');
+          tbody.innerHTML = `<tr><td colspan="8">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        tbody.innerHTML = list.map(t => `
+          <tr>
+            <td><strong>${UI.escapeHtml(t.test_code || '')}</strong></td>
+            <td>
+              <div style="font-weight:600">${UI.escapeHtml(t.name)}</div>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${t.home_collection_available ? 'Home Collection' : 'Branch Only'}</div>
+            </td>
+            <td><span class="badge badge-blue">${UI.escapeHtml(getCategoryName(t))}</span></td>
+            <td>
+              ${t.discounted_price ? `<span class="price-original">${UI.formatCurrency(t.price)}</span><strong>${UI.formatCurrency(t.discounted_price)}</strong>` : `<strong>${UI.formatCurrency(t.price)}</strong>`}
+            </td>
+            <td>
+              <div>${UI.escapeHtml(t.sample_type || 'Blood')}</div>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${t.fasting_required ? `Fasting (${t.fasting_hours || 8}h)` : 'No fasting'}</div>
+            </td>
+            <td>${UI.escapeHtml(t.report_time || '24 hours')}</td>
+            <td>
+              <span class="badge ${t.is_active ? 'badge-green' : 'badge-gray'}">${t.is_active ? 'Active' : 'Inactive'}</span>
+            </td>
+            <td>
+              <div class="action-btns">
+                <button class="icon-btn edit-test-btn" data-id="${t.id}" title="Edit">${Components.icon('edit')}</button>
+                <button class="btn btn-sm ${t.is_active ? 'btn-secondary' : 'btn-success'} toggle-test-btn" data-id="${t.id}">
+                  ${t.is_active ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(t => `
+          <div class="data-card">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(t.name)}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(t.test_code || '')} · ${UI.escapeHtml(getCategoryName(t))}</div>
+              </div>
+              <span class="badge ${t.is_active ? 'badge-green' : 'badge-gray'}">${t.is_active ? 'Active' : 'Inactive'}</span>
+            </div>
+            <div class="data-card-meta">
+              <div>Price<strong>${UI.formatCurrency(t.discounted_price || t.price)}</strong></div>
+              <div>Sample<strong>${UI.escapeHtml(t.sample_type || 'Blood')}</strong></div>
+              <div>Fasting<strong>${t.fasting_required ? `Yes (${t.fasting_hours || 8}h)` : 'No'}</strong></div>
+              <div>Report<strong>${UI.escapeHtml(t.report_time || '24 hours')}</strong></div>
+            </div>
+            <div class="data-card-actions">
+              <button class="btn btn-secondary btn-sm edit-test-btn" data-id="${t.id}">Edit</button>
+              <button class="btn btn-sm ${t.is_active ? 'btn-danger' : 'btn-success'} toggle-test-btn" data-id="${t.id}">
+                ${t.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.edit-test-btn').forEach(btn => {
+          btn.addEventListener('click', () => openTestModal(btn.dataset.id));
+        });
+        document.querySelectorAll('.toggle-test-btn').forEach(btn => {
+          btn.addEventListener('click', () => toggleTestActive(btn.dataset.id, btn));
+        });
+      }
+
+      async function openTestModal(id = null) {
+        const form = document.getElementById('test-form');
+        form.reset();
+        document.getElementById('t-id').value = id || '';
+        document.getElementById('test-modal-title').textContent = id ? 'Edit Test' : 'Add New Test';
+
+        let test = null;
+        if (id) {
+          test = allTests.find(x => String(x.id) === String(id));
+          try {
+            const detail = await API.get(`/tests/${id}`);
+            test = detail.test || detail || test;
+          } catch { /* fallback to list item */ }
+        }
+
+        if (test) {
+          document.getElementById('t-code').value = test.test_code || '';
+          document.getElementById('t-category').value = test.category_id || '';
+          document.getElementById('t-name').value = test.name || '';
+          document.getElementById('t-desc').value = test.description || '';
+          document.getElementById('t-price').value = test.price ?? '';
+          document.getElementById('t-discount-price').value = test.discounted_price ?? '';
+          document.getElementById('t-report-time').value = test.report_time || '24 hours';
+          document.getElementById('t-sample').value = test.sample_type || 'Blood';
+          document.getElementById('t-fasting').checked = !!test.fasting_required;
+          document.getElementById('t-fasting-hours').value = test.fasting_hours ?? '';
+          document.getElementById('t-prep').value = test.preparation || 'No special preparation required';
+          document.getElementById('t-home').checked = test.home_collection_available !== 0;
+          document.getElementById('t-active').checked = test.is_active !== 0;
+
+          const branchIds = (test.branch_ids || (Array.isArray(test.branches) ? test.branches.map(b => b.id || b) : null));
+          document.querySelectorAll('input[name="t-branch"]').forEach(cb => {
+            cb.checked = branchIds ? branchIds.map(String).includes(String(cb.value)) : true;
+          });
+        } else {
+          document.getElementById('t-report-time').value = '24 hours';
+          document.getElementById('t-prep').value = 'No special preparation required';
+          document.getElementById('t-home').checked = true;
+          document.getElementById('t-active').checked = true;
+          document.querySelectorAll('input[name="t-branch"]').forEach(cb => { cb.checked = true; });
+        }
+
+        UI.openModal('test-modal');
+      }
+
+      async function toggleTestActive(id, btn) {
+        const test = allTests.find(x => String(x.id) === String(id));
+        if (!test) return;
+        const nextActive = test.is_active ? 0 : 1;
+        const actionLabel = nextActive ? 'activate' : 'deactivate';
+        UI.confirm(`Are you sure you want to ${actionLabel} "${test.name}"?`, async () => {
+          UI.setButtonLoading(btn, true);
+          try {
+            if (!nextActive) {
+              await API.put(`/admin/tests/${id}`, { ...test, is_active: 0 });
+            } else {
+              await API.put(`/admin/tests/${id}`, { ...test, is_active: 1 });
+            }
+            UI.toast(`Test ${actionLabel}d`, 'success');
+            await loadTests();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to update test', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        }, 'Confirm Status Change');
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'tests',
+          title: 'Tests Management',
+          subtitle: 'Manage diagnostic tests, pricing, fasting & branch availability',
+        });
+
+        await loadMetadata();
+        await loadTests();
+
+        document.getElementById('test-search').addEventListener('input', UI.debounce(applyFilters, 200));
+        document.getElementById('test-cat-filter').addEventListener('change', applyFilters);
+        document.getElementById('test-status-filter').addEventListener('change', applyFilters);
+        document.getElementById('add-test-btn').addEventListener('click', () => openTestModal(null));
+        document.getElementById('add-category-btn').addEventListener('click', () => {
+          document.getElementById('category-form').reset();
+          UI.openModal('category-modal');
+        });
+
+        document.getElementById('test-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = document.getElementById('t-id').value;
+          const branch_ids = Array.from(document.querySelectorAll('input[name="t-branch"]:checked')).map(cb => Number(cb.value));
+          const discountVal = document.getElementById('t-discount-price').value;
+          const fastingHoursVal = document.getElementById('t-fasting-hours').value;
+
+          const payload = {
+            test_code: document.getElementById('t-code').value.trim(),
+            name: document.getElementById('t-name').value.trim(),
+            category_id: Number(document.getElementById('t-category').value),
+            description: document.getElementById('t-desc').value.trim(),
+            price: Number(document.getElementById('t-price').value),
+            discounted_price: discountVal !== '' ? Number(discountVal) : null,
+            sample_type: document.getElementById('t-sample').value,
+            fasting_required: document.getElementById('t-fasting').checked ? 1 : 0,
+            fasting_hours: fastingHoursVal !== '' ? Number(fastingHoursVal) : null,
+            preparation: document.getElementById('t-prep').value.trim(),
+            report_time: document.getElementById('t-report-time').value.trim(),
+            home_collection_available: document.getElementById('t-home').checked ? 1 : 0,
+            is_active: document.getElementById('t-active').checked ? 1 : 0,
+            branch_ids,
+          };
+
+          const btn = document.getElementById('t-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            if (id) {
+              await API.put(`/admin/tests/${id}`, payload);
+              UI.toast('Test updated successfully', 'success');
+            } else {
+              await API.post('/admin/tests', payload);
+              UI.toast('Test created successfully', 'success');
+            }
+            UI.closeModal('test-modal');
+            await loadTests();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to save test', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        document.getElementById('category-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('c-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.post('/admin/categories', {
+              name: document.getElementById('c-name').value.trim(),
+              description: document.getElementById('c-desc').value.trim(),
+            });
+            UI.toast('Category created', 'success');
+            UI.closeModal('category-modal');
+            await loadMetadata();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to create category', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

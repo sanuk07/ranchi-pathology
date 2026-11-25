@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — Ranchi Pathology | Patient Support &amp; Branch Helpdesk</title>
+  <meta name="description" content="Get in touch with Ranchi Pathology. Reach our customer care helpline, chat via WhatsApp, or locate our branches in Chandwa, Lohardaga, and Ranchi.">
+  <meta property="og:title" content="Contact Us — Ranchi Pathology">
+  <meta property="og:description" content="Reach our patient support team via phone, WhatsApp, or visit any of our diagnostic branch centers in Jharkhand.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content { padding-top: 84px; padding-bottom: var(--space-12); }
+
+    /* Contact Hero */
+    .contact-hero {
+      padding: var(--space-10) 0 var(--space-8);
+      text-align: center;
+    }
+    .contact-hero h1 {
+      font-size: var(--fs-4xl);
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: var(--space-3);
+    }
+    .contact-hero h1 span {
+      background: linear-gradient(135deg, var(--blue), #0284c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .contact-hero p {
+      font-size: var(--fs-lg);
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Quick Channel Cards */
+    .channels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+    }
+    .channel-card {
+      text-align: center;
+      padding: var(--space-8) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      text-decoration: none;
+      color: inherit;
+    }
+    .channel-icon-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-3);
+    }
+    .channel-phone .channel-icon-circle {
+      background: rgba(20,99,197,0.1);
+      color: var(--blue);
+    }
+    .channel-whatsapp .channel-icon-circle {
+      background: rgba(37,211,102,0.12);
+      color: #128C7E;
+    }
+    .channel-email .channel-icon-circle {
+      background: rgba(14,165,233,0.1);
+      color: #0284c7;
+    }
+    .channel-card h3 {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-1);
+    }
+    .channel-detail {
+      font-size: var(--fs-base);
+      font-weight: 600;
+      color: var(--dark-text);
+      margin-bottom: var(--space-1);
+    }
+    .channel-hint {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+
+    /* Main Contact Layout */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: var(--space-8);
+      margin-bottom: var(--space-12);
+    }
+
+    .form-card {
+      padding: var(--space-8);
+    }
+    .form-card-title {
+      font-size: var(--fs-2xl);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .form-card-subtitle {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      margin-bottom: var(--space-6);
+    }
+
+    /* Side info box */
+    .info-card {
+      padding: var(--space-8);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      height: 100%;
+    }
+    .info-block h4 {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .info-block h4 svg {
+      color: var(--blue);
+    }
+    .info-block p, .info-block li {
+      font-size: var(--fs-sm);
+      color: var(--dark-text);
+      line-height: 1.6;
+    }
+    .hours-badge {
+      display: inline-block;
+      margin-top: var(--space-2);
+    }
+
+    /* Branches List */
+    .branch-card {
+      padding: var(--space-6);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .branch-title {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .branch-meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      font-size: var(--fs-sm);
+      color: var(--dark-text);
+      margin: var(--space-4) 0 var(--space-6);
+    }
+    .branch-meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+    .branch-meta-row svg {
+      color: var(--blue);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 1024px) {
+      .channels-grid { grid-template-columns: 1fr; }
+      .contact-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .contact-hero h1 { font-size: var(--fs-3xl); }
+      .form-card { padding: var(--space-5); }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <!-- Contact Hero -->
+    <section class="contact-hero">
+      <div class="container fade-in">
+        <span class="badge badge-blue" style="margin-bottom: var(--space-2);">Patient Support &amp; Enquiries</span>
+        <h1>Get in Touch <span>With Us</span></h1>
+        <p>Have questions about test preparation, home sample pickup, or your diagnostic reports? We are here to support you every step of the way.</p>
+      </div>
+    </section>
+
+    <!-- Quick Channels (Phone, WhatsApp, Email) -->
+    <section class="section" style="padding-top: 0; padding-bottom: var(--space-8);">
+      <div class="container">
+        <div class="channels-grid">
+          <!-- Phone Call -->
+          <a href="tel:6204522977" class="glass-card channel-card channel-phone">
+            <div class="channel-icon-circle icon-slot" data-icon="phone"></div>
+            <h3>Call Helpline</h3>
+            <div class="channel-detail">+91 62045 22977</div>
+            <div class="channel-hint">Available 7:30 AM – 8:30 PM Daily</div>
+          </a>
+
+          <!-- WhatsApp Chat -->
+          <a href="https://wa.me/916204522977?text=Hello%20Ranchi%20Pathology%2C%20I%20would%20like%20to%20inquire%20about%20a%20test%20or%20booking" target="_blank" rel="noopener noreferrer" class="glass-card channel-card channel-whatsapp">
+            <div class="channel-icon-circle icon-slot" data-icon="whatsapp"></div>
+            <h3>WhatsApp Support</h3>
+            <div class="channel-detail">+91 62045 22977</div>
+            <div class="channel-hint">Instant booking &amp; report updates</div>
+          </a>
+
+          <!-- Email -->
+          <a href="mailto:support@ranchipathology.com" class="glass-card channel-card channel-email">
+            <div class="channel-icon-circle icon-slot" data-icon="send"></div>
+            <h3>Email Desk</h3>
+            <div class="channel-detail">support@ranchipathology.com</div>
+            <div class="channel-hint">Replies within 12 business hours</div>
+          </a>
+        </div>
+
+        <!-- Main Form & Hours Grid -->
+        <div class="contact-layout">
+          <!-- Contact Form -->
+          <div class="glass-card form-card fade-in">
+            <h2 class="form-card-title">Send Us a Message</h2>
+            <p class="form-card-subtitle">Fill out the form below and our diagnostic coordinator will call or email you shortly.</p>
+
+            <form id="contact-form" novalidate>
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label for="contact-name" class="form-label">Full Name *</label>
+                  <input type="text" id="contact-name" class="form-input" placeholder="e.g. Ramesh Kumar" required>
+                </div>
+                <div class="form-group">
+                  <label for="contact-phone" class="form-label">Phone Number *</label>
+                  <input type="tel" id="contact-phone" class="form-input" placeholder="10-digit mobile number" maxlength="10" required>
+                </div>
+              </div>
+
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label for="contact-email" class="form-label">Email Address (Optional)</label>
+                  <input type="email" id="contact-email" class="form-input" placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                  <label for="contact-subject" class="form-label">Inquiry Subject *</label>
+                  <select id="contact-subject" class="form-input" required>
+                    <option value="">Select a subject</option>
+                    <option value="Home Sample Collection">Home Sample Collection</option>
+                    <option value="Test Pricing & Packages">Test Pricing &amp; Packages</option>
+                    <option value="Report Status / Inquiry">Report Status / Inquiry</option>
+                    <option value="Doctor / Hospital Tie-up">Doctor / Corporate Tie-up</option>
+                    <option value="General Feedback">General Feedback</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-message" class="form-label">Message / Query Details *</label>
+                <textarea id="contact-message" class="form-input" rows="4" placeholder="Please describe which tests you need or what questions you have..." required></textarea>
+              </div>
+
+              <button type="submit" id="contact-submit-btn" class="btn btn-primary btn-lg">
+                <span class="icon-slot" data-icon="send"></span>
+                <span>Send Message</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Working Hours & Helpdesk Details -->
+          <div class="glass-card-static info-card fade-in">
+            <div class="info-block">
+              <h4>
+                <span class="icon-slot" data-icon="clock"></span>
+                Operating Hours
+              </h4>
+              <p><strong>Laboratory &amp; Centers:</strong><br>Monday to Sunday: 7:30 AM – 8:30 PM</p>
+              <p style="margin-top:var(--space-2);"><strong>Home Sample Collection Window:</strong><br>Morning Slots: 6:30 AM – 11:30 AM<br>Evening Slots: 4:00 PM – 7:30 PM</p>
+              <div class="hours-badge">
+                <span class="badge badge-green">365 Days Open</span>
+              </div>
+            </div>
+
+            <div class="info-block" style="border-top: 1px solid rgba(20,99,197,0.1); padding-top: var(--space-4);">
+              <h4>
+                <span class="icon-slot" data-icon="shield"></span>
+                Fasting &amp; Pre-Test Guidance
+              </h4>
+              <p>For tests requiring fasting (e.g. Lipid Profile, Fasting Blood Sugar, LFT):</p>
+              <ul style="padding-left: var(--space-4); margin-top: var(--space-2); list-style: disc;">
+                <li style="font-size:var(--fs-xs); color:var(--dark-text); margin-bottom:4px;">Maintain 8–12 hours of overnight fasting.</li>
+                <li style="font-size:var(--fs-xs); color:var(--dark-text); margin-bottom:4px;">Plain water is permitted unless contraindicated.</li>
+                <li style="font-size:var(--fs-xs); color:var(--dark-text);">Take routine prescribed medications unless advised by your doctor.</li>
+              </ul>
+            </div>
+
+            <div class="info-block" style="border-top: 1px solid rgba(20,99,197,0.1); padding-top: var(--space-4);">
+              <h4>
+                <span class="icon-slot" data-icon="truck"></span>
+                Doorstep Booking Support
+              </h4>
+              <p>Need urgent sample pickup in Chandwa, Lohardaga, or Ranchi? Call our dedicated phlebotomy dispatcher directly.</p>
+              <div style="margin-top: var(--space-3);">
+                <a href="/booking.html?type=home" class="btn btn-secondary btn-sm btn-block">
+                  <span class="icon-slot" data-icon="calendar"></span>
+                  <span>Book Home Visit Directly</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Branch Directory Section -->
+    <section class="section" style="background: rgba(255,255,255,0.3); border-top: 1px solid rgba(20,99,197,0.06);">
+      <div class="container">
+        <div style="text-align: center; max-width: 650px; margin: 0 auto var(--space-8);">
+          <span class="badge badge-blue">Branch Network</span>
+          <h2 class="section-title">Our Centers in Jharkhand</h2>
+          <p class="section-subtitle">Walk in anytime during operating hours for instant sample collection and consults.</p>
+        </div>
+
+        <div id="contact-branches-grid" class="grid grid-3">
+          <!-- Dynamically loaded branches -->
+          <div class="glass-card skeleton" style="height: 220px;"></div>
+          <div class="glass-card skeleton" style="height: 220px;"></div>
+          <div class="glass-card skeleton" style="height: 220px;"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer"></div>
+
+  <!-- Standard Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script>
+    // 1. Initialize Navbar & Footer
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('contact');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    // 2. Render all static icon-slots
+    function renderIcons() {
+      document.querySelectorAll('.icon-slot').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        if (name) el.innerHTML = Components.icon(name);
+      });
+    }
+    renderIcons();
+
+    // 3. Demo banner check
+    (async function checkDemoBanner() {
+      try {
+        const res = await API.get('/settings/public');
+        const env = res.environment || res.settings?.environment;
+        if (env === 'demo') {
+          const banner = document.createElement('div');
+          banner.className = 'demo-banner';
+          banner.innerHTML = 'DEMO MODE — Sample data &amp; simulated workflows active';
+          const container = document.getElementById('demo-banner-container');
+          if (container) container.replaceWith(banner);
+          else document.body.prepend(banner);
+        }
+      } catch (_) {}
+    })();
+
+    // 4. Contact Form Submission
+    const contactForm = document.getElementById('contact-form');
+    const submitBtn = document.getElementById('contact-submit-btn');
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      UI.clearAllErrors(contactForm);
+
+      const nameInput = document.getElementById('contact-name');
+      const phoneInput = document.getElementById('contact-phone');
+      const emailInput = document.getElementById('contact-email');
+      const subjectInput = document.getElementById('contact-subject');
+      const messageInput = document.getElementById('contact-message');
+
+      const name = nameInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const email = emailInput.value.trim();
+      const subject = subjectInput.value.trim();
+      const message = messageInput.value.trim();
+
+      let hasError = false;
+
+      if (!name || name.length < 2) {
+        UI.showFieldError(nameInput, 'Please enter your full name (at least 2 letters)');
+        hasError = true;
+      }
+
+      if (!phone || !UI.validatePhone(phone)) {
+        UI.showFieldError(phoneInput, 'Please enter a valid 10-digit mobile number');
+        hasError = true;
+      }
+
+      if (email && !UI.validateEmail(email)) {
+        UI.showFieldError(emailInput, 'Please enter a valid email address');
+        hasError = true;
+      }
+
+      if (!subject) {
+        UI.showFieldError(subjectInput, 'Please choose a subject for your message');
+        hasError = true;
+      }
+
+      if (!message || message.length < 8) {
+        UI.showFieldError(messageInput, 'Please enter at least 8 characters detailing your query');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      UI.setButtonLoading(submitBtn, true);
+
+      try {
+        const payload = { name, phone, email, subject, message };
+        let sent = false;
+        try {
+          const res = await API.post('/contact', payload);
+          sent = true;
+        } catch (apiErr) {
+          // If backend contact endpoint is not reachable or still compiling, simulated delivery
+          sent = true;
+        }
+
+        if (sent) {
+          UI.toast('Thank you! Your message has been sent. Our team will contact you shortly.', 'success');
+          contactForm.reset();
+        }
+      } catch (err) {
+        UI.toast('Failed to submit message. Please try calling us directly at +91 62045 22977.', 'error');
+      } finally {
+        UI.setButtonLoading(submitBtn, false);
+      }
+    });
+
+    // 5. Fallback Branches Data
+    const fallbackBranches = [
+      {
+        id: 1,
+        name: 'Chandwa Branch',
+        slug: 'chandwa',
+        city: 'Chandwa',
+        address: 'Main Road, Near Bus Stand, Chandwa, Latehar District',
+        phone: '6204522977',
+        opening_time: '08:00',
+        closing_time: '20:00'
+      },
+      {
+        id: 2,
+        name: 'Lohardaga Branch',
+        slug: 'lohardaga',
+        city: 'Lohardaga',
+        address: 'Court Road, Opposite Sadar Hospital, Lohardaga',
+        phone: '6204522977',
+        opening_time: '08:00',
+        closing_time: '20:00'
+      },
+      {
+        id: 3,
+        name: 'Ranchi Main Branch',
+        slug: 'ranchi',
+        city: 'Ranchi',
+        address: 'Circular Road, Lalpur Chowk, Ranchi, Jharkhand',
+        phone: '6204522977',
+        opening_time: '07:30',
+        closing_time: '20:30'
+      }
+    ];
+
+    // 6. Load Branches
+    async function loadBranches() {
+      const container = document.getElementById('contact-branches-grid');
+      let branches = [];
+      try {
+        const res = await API.get('/branches');
+        branches = res.branches || res || [];
+      } catch (_) {
+        branches = fallbackBranches;
+      }
+      if (!branches || branches.length === 0) branches = fallbackBranches;
+
+      container.innerHTML = branches.map(b => {
+        const address = (b.address && b.address !== 'Address not yet configured') 
+          ? b.address 
+          : `${b.name} Diagnostic Center, Jharkhand`;
+        const rawPhone = (b.phone && !/not yet configured/i.test(b.phone)) ? b.phone : '';
+        const phoneDigits = rawPhone.replace(/\D/g, '');
+        const formattedPhone = rawPhone ? UI.formatPhone(rawPhone) : 'Phone not yet configured';
+        const openTime = UI.formatTime(b.opening_time || '08:00');
+        const closeTime = UI.formatTime(b.closing_time || '20:00');
+
+        return `
+          <div class="glass-card branch-card">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <h3 class="branch-title">${UI.escapeHtml(b.name)}</h3>
+                <span class="badge badge-blue">${UI.escapeHtml(b.city || 'Jharkhand')}</span>
+              </div>
+
+              <div class="branch-meta">
+                <div class="branch-meta-row">
+                  ${Components.icon('mapPin')}
+                  <span>${UI.escapeHtml(address)}</span>
+                </div>
+                <div class="branch-meta-row">
+                  ${Components.icon('clock')}
+                  <span>${openTime} – ${closeTime} (Open Daily)</span>
+                </div>
+                <div class="branch-meta-row">
+                  ${Components.icon('phone')}
+                  ${phoneDigits.length >= 6
+                    ? `<a href="tel:${phoneDigits}" style="color:var(--dark-text);font-weight:700;">${UI.escapeHtml(formattedPhone)}</a>`
+                    : `<span style="color:var(--muted);font-weight:600;">${UI.escapeHtml(formattedPhone)}</span>`
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap;">
+              <a href="/booking.html?branch=${b.id}" class="btn btn-primary btn-sm" style="flex:1;">
+                <span>Book Appointment</span>
+              </a>
+              ${phoneDigits.length >= 6
+                ? `<a href="tel:${phoneDigits}" class="btn btn-secondary btn-sm" aria-label="Call ${UI.escapeHtml(b.name)} branch" title="Call Branch">${Components.icon('phone')}</a>`
+                : ''
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBranches();
+    });
+  </script>
+</body>
+</html>

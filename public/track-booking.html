@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Booking Status — Ranchi Pathology</title>
+  <meta name="description" content="Track your diagnostic test booking, sample collection progress, lab analysis status, and pathology report availability in real time with Ranchi Pathology.">
+  <meta property="og:title" content="Track Booking Status — Ranchi Pathology">
+  <meta property="og:description" content="Real-time tracking of pathology test bookings, sample collection, lab testing, and medical reports.">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content {
+      padding-top: 88px;
+      padding-bottom: var(--space-12);
+      min-height: calc(100vh - 300px);
+    }
+
+    .track-hero {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-6);
+    }
+    .track-hero h1 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .track-hero p {
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto;
+      font-size: var(--fs-base);
+    }
+
+    /* Search Box */
+    .search-card {
+      max-width: 680px;
+      margin: 0 auto var(--space-8);
+      background: var(--glass-bg-strong);
+    }
+    .search-form-row {
+      display: flex;
+      gap: var(--space-3);
+      align-items: stretch;
+    }
+    .search-form-row .form-input {
+      font-size: var(--fs-base);
+      letter-spacing: 0.03em;
+    }
+    .search-help {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+
+    /* Result Container */
+    #track-result {
+      display: none;
+    }
+    #track-result.active {
+      display: block;
+    }
+
+    /* Summary Header */
+    .booking-summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid rgba(20,99,197,0.1);
+      margin-bottom: var(--space-6);
+    }
+    .booking-id-tag {
+      font-size: var(--fs-xl);
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: 0.04em;
+      word-break: break-word;
+    }
+    .tracking-token-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: 6px;
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+    .tracking-token-pill {
+      font-family: monospace;
+      background: rgba(20,99,197,0.08);
+      color: var(--navy);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      word-break: break-all;
+      font-weight: 600;
+    }
+    .recent-tests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+    .recent-test-card {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(20,99,197,0.12);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .booking-meta-badges {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    /* Vertical Timeline */
+    .timeline-card {
+      margin-bottom: var(--space-6);
+    }
+    .timeline-title {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .vertical-timeline {
+      position: relative;
+      padding-left: 42px;
+    }
+    .vertical-timeline::before {
+      content: '';
+      position: absolute;
+      left: 17px;
+      top: 14px;
+      bottom: 24px;
+      width: 3px;
+      background: rgba(20,99,197,0.15);
+      border-radius: var(--radius-full);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: var(--space-6);
+    }
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+    .timeline-marker {
+      position: absolute;
+      left: -42px;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid rgba(100,116,139,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: var(--fs-xs);
+      z-index: 2;
+      transition: var(--transition-fast);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .timeline-marker svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Timeline step states */
+    .timeline-item.done .timeline-marker {
+      background: var(--success);
+      border-color: var(--success);
+      color: var(--white);
+      box-shadow: 0 0 0 4px rgba(16,185,129,0.2);
+    }
+    .timeline-item.active .timeline-marker {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: var(--white);
+      box-shadow: 0 0 0 5px rgba(20,99,197,0.25);
+      animation: pulseMarker 2s infinite ease-in-out;
+    }
+    .timeline-item.cancelled .timeline-marker {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: var(--white);
+    }
+
+    @keyframes pulseMarker {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(20,99,197,0.2); }
+      50% { box-shadow: 0 0 0 9px rgba(20,99,197,0.05); }
+    }
+
+    .timeline-body {
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+    }
+    .timeline-item.active .timeline-body {
+      background: rgba(20,99,197,0.04);
+      border-color: rgba(20,99,197,0.25);
+    }
+    .timeline-step-title {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-1);
+    }
+    .timeline-step-desc {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .timeline-timestamp {
+      font-size: var(--fs-xs);
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    /* Detail Grid Cards */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+    .detail-card-title {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid rgba(20,99,197,0.08);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: var(--space-2) 0;
+      font-size: var(--fs-sm);
+      border-bottom: 1px dashed rgba(20,99,197,0.06);
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail-label {
+      color: var(--muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .detail-value {
+      font-weight: 600;
+      color: var(--dark-text);
+      text-align: right;
+    }
+
+    /* Items Table */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--space-2);
+    }
+    .items-table th {
+      text-align: left;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--muted);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid rgba(20,99,197,0.1);
+      text-transform: uppercase;
+    }
+    .items-table td {
+      padding: var(--space-3) 0;
+      font-size: var(--fs-sm);
+      border-bottom: 1px solid rgba(20,99,197,0.05);
+      vertical-align: middle;
+    }
+    .item-type-badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-right: var(--space-2);
+    }
+    .item-type-test { background: rgba(20,99,197,0.1); color: var(--blue); }
+    .item-type-package { background: rgba(16,185,129,0.1); color: var(--success); }
+
+    /* Payment & QR Card */
+    .payment-action-box {
+      margin-top: var(--space-4);
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(20,99,197,0.15);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      flex-wrap: wrap;
+    }
+    .qr-container {
+      width: 150px;
+      height: 150px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: var(--radius-md);
+      padding: var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .qr-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .qr-info {
+      flex: 1;
+      min-width: 220px;
+    }
+    .qr-info h4 {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+    }
+    .qr-info p {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin-bottom: var(--space-3);
+      line-height: 1.5;
+    }
+
+    /* Report Ready Callout */
+    .report-ready-callout {
+      background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(20,99,197,0.08));
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .report-ready-callout .left-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .report-ready-callout .icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--success);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Cancelled Banner */
+    .cancelled-callout {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-6);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--danger);
+    }
+
+    @media (max-width: 768px) {
+      .search-form-row {
+        flex-direction: column;
+      }
+      .search-form-row .btn {
+        width: 100%;
+      }
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+      .detail-row {
+        flex-wrap: wrap;
+        gap: 4px 12px;
+      }
+      .detail-value {
+        text-align: left;
+      }
+      .payment-action-box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .qr-info {
+        min-width: 0;
+        width: 100%;
+      }
+      .qr-info .btn {
+        width: 100%;
+      }
+      .report-ready-callout {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .report-ready-callout .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <div class="container">
+      
+      <!-- Page Hero -->
+      <header class="track-hero">
+        <span class="badge badge-blue" style="margin-bottom:var(--space-2);">
+          <span class="icon-slot" data-icon="activity"></span>
+          <span style="margin-left:4px;">Live Appointment Tracking</span>
+        </span>
+        <h1>Track Your Booking</h1>
+        <p>Stay informed about your sample collection, laboratory analysis status, and diagnostic report release in real time.</p>
+      </header>
+
+      <!-- Search Card -->
+      <section class="glass-card-static search-card" aria-label="Tracking Search">
+        <form id="track-form" onsubmit="return false;">
+          <div class="form-group" style="margin-bottom:var(--space-2);">
+            <label for="tracking-token-input" class="form-label">Enter Tracking Token or Booking ID</label>
+            <div class="search-form-row">
+              <input
+                type="text"
+                id="tracking-token-input"
+                class="form-input"
+                placeholder="e.g. RP-20261125-2F5E or Tracking Token"
+                required
+                autocomplete="off"
+                aria-describedby="tracking-token-hint"
+              >
+              <button type="submit" id="track-btn" class="btn btn-primary">
+                <span class="icon-slot" data-icon="search"></span>
+                <span>Track Status</span>
+              </button>
+            </div>
+            <!-- Inline phone verification shown only when searching by Booking ID from another device -->
+            <div id="verify-phone-box" style="display:none; margin-top: var(--space-3); padding: var(--space-3); background: rgba(20,99,197,0.06); border: 1px solid rgba(20,99,197,0.18); border-radius: var(--radius-md);">
+              <label for="verify-phone-input" class="form-label" style="margin-bottom:4px;">Verify Mobile Number for Booking ID</label>
+              <p style="font-size:var(--fs-xs); color:var(--muted); margin-bottom:var(--space-2);">For your privacy, please enter the 10-digit mobile number used during booking.</p>
+              <div class="search-form-row">
+                <input type="tel" id="verify-phone-input" class="form-input" placeholder="10-digit mobile number" maxlength="15" inputmode="numeric">
+                <button type="button" id="verify-id-btn" class="btn btn-primary">Verify &amp; Track</button>
+              </div>
+            </div>
+            <div id="tracking-token-hint" class="search-help">
+              <span>Enter your Booking ID (e.g. RP-...) or Tracking Token.</span>
+              <a href="/reports.html" style="font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                <span>Reports Portal</span>
+                <span class="icon-slot" data-icon="arrowRight"></span>
+              </a>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Recent 10 Bookings on This Device -->
+      <section class="glass-card-static" id="device-recent-section" style="max-width:960px; margin:0 auto var(--space-8); display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-2); margin-bottom:var(--space-3);">
+          <div>
+            <h2 style="font-size:var(--fs-lg); font-weight:800; color:var(--navy); margin-bottom:2px;">Recent Bookings on This Device</h2>
+            <p style="font-size:var(--fs-xs); color:var(--muted); margin:0;">Tap any recent booking (up to 10) to view live status and details.</p>
+          </div>
+          <span class="badge badge-blue" id="device-recent-count">0 Saved</span>
+        </div>
+        <div class="recent-tests-grid" id="device-recent-grid"></div>
+      </section>
+
+      <!-- Loading Placeholder -->
+      <div id="loading-state" style="display:none; text-align:center; padding:var(--space-12) 0;">
+        <div class="spinner"></div>
+        <p style="margin-top:var(--space-4); color:var(--muted); font-size:var(--fs-sm);">Retrieving live booking status...</p>
+      </div>
+
+      <!-- Empty / Error State -->
+      <section id="error-state" class="glass-card-static empty-state" style="display:none; max-width:680px; margin:0 auto var(--space-8);">
+        <div class="icon-slot" data-icon="fileText"></div>
+        <h3 id="error-title">Booking Not Found</h3>
+        <p id="error-message">We couldn't locate any appointment matching the provided tracking reference. Please double check the characters and try again.</p>
+        <div style="display:flex; justify-content:center; gap:var(--space-3); flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('tracking-token-input').focus();">
+            <span class="icon-slot" data-icon="refresh"></span>
+            <span>Check Another Token</span>
+          </button>
+          <a href="/reports.html" class="btn btn-primary btn-sm">
+            <span class="icon-slot" data-icon="shield"></span>
+            <span>Search via Mobile Number</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Active Tracking Results Container -->
+      <section id="track-result" class="fade-in" aria-live="polite">
+        
+        <!-- Summary Header Card -->
+        <div class="glass-card-static" style="margin-bottom:var(--space-6);">
+          <div class="booking-summary-header">
+            <div style="min-width:0; max-width:100%;">
+              <span style="font-size:var(--fs-xs); color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Booking Reference</span>
+              <div class="booking-id-tag" id="res-booking-id">RP-000000</div>
+              <div class="tracking-token-row">
+                <span>Token:</span>
+                <span class="tracking-token-pill" id="res-tracking-token">—</span>
+                <button type="button" id="btn-copy-token" class="btn btn-secondary btn-sm" style="min-height:28px;padding:2px 10px;">Copy</button>
+              </div>
+              <div style="font-size:var(--fs-xs); color:var(--muted); margin-top:4px;" id="res-booked-date">Booked on —</div>
+            </div>
+            <div class="booking-meta-badges">
+              <span id="res-status-badge" class="status status-pending">Pending</span>
+              <span id="res-payment-badge" class="badge badge-yellow">Payment Pending</span>
+              <span id="res-type-badge" class="badge badge-blue">Branch Visit</span>
+            </div>
+          </div>
+
+          <!-- Cancelled Notice (if status === 'cancelled') -->
+          <div id="cancelled-notice" class="cancelled-callout" style="display:none;">
+            <span class="icon-slot" data-icon="close"></span>
+            <div>
+              <strong>This booking has been cancelled.</strong>
+              <div style="font-size:var(--fs-xs); margin-top:2px;">If you have any queries or requested a refund, please contact customer support or visit our branch.</div>
+            </div>
+          </div>
+
+          <!-- Report Ready Highlight Callout -->
+          <div id="report-ready-callout" class="report-ready-callout" style="display:none;">
+            <div class="left-info">
+              <div class="icon-circle icon-slot" data-icon="fileText"></div>
+              <div>
+                <h4 style="font-size:var(--fs-base); font-weight:700; color:var(--navy); margin-bottom:2px;">Diagnostic Report Ready!</h4>
+                <p style="font-size:var(--fs-xs); color:var(--muted); margin:0;">Your test results have been verified and signed by our consulting pathologist.</p>
+              </div>
+            </div>
+            <div>
+              <a id="res-download-report-btn" href="#" target="_blank" class="btn btn-success">
+                <span class="icon-slot" data-icon="download"></span>
+                <span>Download Report (PDF)</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Vertical Timeline -->
+          <div class="timeline-card">
+            <h3 class="timeline-title">
+              <span class="icon-slot" data-icon="activity"></span>
+              <span>Progress &amp; Status Timeline</span>
+            </h3>
+
+            <div class="vertical-timeline" id="timeline-container">
+              
+              <!-- Step 1: Booked -->
+              <div class="timeline-item done" id="step-1">
+                <div class="timeline-marker icon-slot" data-icon="check"></div>
+                <div class="timeline-body">
+                  <div class="timeline-step-title">
+                    <span>1. Booking Confirmed</span>
+                    <span class="timeline-timestamp" id="time-step-1">Done</span>
+                  </div>
+                  <div class="timeline-step-desc">Your appointment has been registered in the system with patient and test details.</div>
+                </div>
+              </div>
+
+              <!-- Step 2: Confirmed / Phlebotomist Assigned -->
+              <div class="timeline-item" id="step-2">
+                <div class="timeline-marker icon-slot" data-icon="userCheck"></div>
+                <div class="timeline-body">
+                  <div class="timeline-step-title">
+                    <span>2. Lab Confirmation</span>
+                    <span class="timeline-timestamp" id="time-step-2">Pending</span>
+                  </div>
+                  <div class="timeline-step-desc" id="desc-step-2">Appointment slot scheduled and assigned to our branch lab team.</div>
+                </div>
+              </div>
+
+              <!-- Step 3: Sample Collected -->
+              <div class="timeline-item" id="step-3">
+                <div class="timeline-marker icon-slot" data-icon="droplet"></div>
+                <div class="timeline-body">
+                  <div class="timeline-step-title">
+                    <span>3. Sample Collection</span>
+                    <span class="timeline-timestamp" id="time-step-3">Pending</span>
+                  </div>
+                  <div class="timeline-step-desc" id="desc-step-3">Blood/specimen sample collected securely under cold-chain protocol.</div>
+                </div>
+              </div>
+
+              <!-- Step 4: Laboratory Processing -->
+              <div class="timeline-item" id="step-4">
+                <div class="timeline-marker icon-slot" data-icon="flask"></div>
+                <div class="timeline-body">
+                  <div class="timeline-step-title">
+                    <span>4. Laboratory Analysis</span>
+                    <span class="timeline-timestamp" id="time-step-4">Pending</span>
+                  </div>
+                  <div class="timeline-step-desc">Sample is processed on automated analyzers and quality checks are conducted.</div>
+                </div>
+              </div>
+
+              <!-- Step 5: Report Ready -->
+              <div class="timeline-item" id="step-5">
+                <div class="timeline-marker icon-slot" data-icon="fileText"></div>
+                <div class="timeline-body">
+                  <div class="timeline-step-title">
+                    <span>5. Report Released</span>
+                    <span class="timeline-timestamp" id="time-step-5">Pending</span>
+                  </div>
+                  <div class="timeline-step-desc">Final verification by Chief Pathologist, digital signature, and report publishing.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Details Grid -->
+        <div class="details-grid">
+          
+          <!-- Column 1: Patient & Appointment Info -->
+          <div class="glass-card-static">
+            <h4 class="detail-card-title">
+              <span class="icon-slot" data-icon="user"></span>
+              <span>Patient &amp; Appointment Details</span>
+            </h4>
+
+            <div class="detail-row">
+              <span class="detail-label"><span class="icon-slot" data-icon="user"></span> Patient Name</span>
+              <span class="detail-value" id="res-patient-name">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label"><span class="icon-slot" data-icon="phone"></span> Contact Phone</span>
+              <span class="detail-value" id="res-patient-phone">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label"><span class="icon-slot" data-icon="clipboard"></span> Age / Gender</span>
+              <span class="detail-value" id="res-patient-demographics">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label"><span class="icon-slot" data-icon="building"></span> Assigned Branch</span>
+              <span class="detail-value" id="res-branch-name">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label"><span class="icon-slot" data-icon="calendar"></span> Appointment Date</span>
+              <span class="detail-value" id="res-appointment-date">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label"><span class="icon-slot" data-icon="clock"></span> Scheduled Time</span>
+              <span class="detail-value" id="res-appointment-time">—</span>
+            </div>
+            <div class="detail-row" id="row-home-address" style="display:none;">
+              <span class="detail-label"><span class="icon-slot" data-icon="home"></span> Home Collection Address</span>
+              <span class="detail-value" id="res-home-address" style="max-width:240px; text-align:right;">—</span>
+            </div>
+          </div>
+
+          <!-- Column 2: Tests Booked & Billing -->
+          <div class="glass-card-static">
+            <h4 class="detail-card-title">
+              <span class="icon-slot" data-icon="flask"></span>
+              <span>Tests &amp; Billing Summary</span>
+            </h4>
+
+            <div style="overflow-x:auto;">
+              <table class="items-table" aria-label="Booked Tests">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="text-align:center;">Qty</th>
+                    <th style="text-align:right;">Price</th>
+                  </tr>
+                </thead>
+                <tbody id="res-items-tbody">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-top:var(--space-4); border-top:1px solid rgba(20,99,197,0.1); padding-top:var(--space-3);">
+              <div class="detail-row">
+                <span class="detail-label">Subtotal</span>
+                <span class="detail-value" id="res-subtotal">₹0</span>
+              </div>
+              <div class="detail-row" id="row-home-charge">
+                <span class="detail-label">Home Collection Fee</span>
+                <span class="detail-value" id="res-home-charge">₹0</span>
+              </div>
+              <div class="detail-row" id="row-discount" style="display:none;">
+                <span class="detail-label" style="color:var(--success);">Discount</span>
+                <span class="detail-value" style="color:var(--success);" id="res-discount">-₹0</span>
+              </div>
+              <div class="detail-row" style="font-size:var(--fs-base); font-weight:700; color:var(--navy); padding-top:var(--space-2);">
+                <span>Total Amount</span>
+                <span id="res-total-amount">₹0</span>
+              </div>
+            </div>
+
+            <!-- Payment QR / UPI Section -->
+            <div id="payment-qr-section" style="display:none;">
+              <div class="payment-action-box">
+                <div class="qr-container" id="qr-img-box">
+                  <div class="spinner"></div>
+                </div>
+                <div class="qr-info">
+                  <h4>UPI Instant Payment</h4>
+                  <p>Scan with any UPI app (Google Pay, PhonePe, Paytm, BHIM) to settle your pending diagnostic fee securely.</p>
+                  <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+                    <a id="btn-upi-app" href="#" class="btn btn-primary btn-sm">
+                      <span class="icon-slot" data-icon="dollarSign"></span>
+                      <span>Open UPI App</span>
+                    </a>
+                    <span id="upi-id-label" class="badge badge-gray" style="align-self:center; font-family:monospace;">6204522977@ptyes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Completed Note -->
+            <div id="payment-completed-box" style="display:none; margin-top:var(--space-4); padding:var(--space-3) var(--space-4); background:rgba(16,185,129,0.1); border-radius:var(--radius-md); border:1px solid rgba(16,185,129,0.2); font-size:var(--fs-xs); color:var(--success); font-weight:600; display:flex; align-items:center; gap:8px;">
+              <span class="icon-slot" data-icon="check"></span>
+              <span>Payment Completed &amp; Verified. Thank you!</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Recent 10 Tests by Customer -->
+        <div class="glass-card-static" id="recent-tests-section" style="margin-bottom:var(--space-6); display:none;">
+          <h4 class="detail-card-title" style="margin-bottom:var(--space-2);">
+            <span class="icon-slot" data-icon="list"></span>
+            <span>Recent 10 Tests Booked by You</span>
+          </h4>
+          <p style="font-size:var(--fs-xs); color:var(--muted); margin-bottom:var(--space-3);">Showing up to your 10 most recent tests with Booking ID and Tracking Token.</p>
+          <div class="recent-tests-grid" id="recent-tests-grid"></div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="glass-card-static" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-4);">
+          <div style="display:flex; align-items:center; gap:var(--space-3);">
+            <div style="color:var(--blue);" class="icon-slot" data-icon="shield"></div>
+            <div>
+              <h5 style="font-size:var(--fs-sm); font-weight:700; color:var(--navy); margin-bottom:2px;">Need assistance with your booking?</h5>
+              <p style="font-size:var(--fs-xs); color:var(--muted); margin:0;">Our support team is available from 8:00 AM to 8:00 PM to help you.</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:var(--space-2);">
+            <a href="/contact.html" class="btn btn-secondary btn-sm">
+              <span class="icon-slot" data-icon="phone"></span>
+              <span>Contact Lab</span>
+            </a>
+            <a href="/reports.html" class="btn btn-outline btn-sm">
+              <span class="icon-slot" data-icon="fileText"></span>
+              <span>Access Reports Portal</span>
+            </a>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <!-- Shared Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+
+  <script>
+    // ─── Initialize Core Layout Components ───
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('track');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    // Helper to render icon slots
+    function renderIcons(container = document) {
+      container.querySelectorAll('.icon-slot').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        if (name && !el.hasChildNodes()) {
+          el.innerHTML = Components.icon(name);
+        }
+      });
+    }
+    renderIcons();
+
+    // ─── Check Demo Mode Banner ───
+    (async function checkDemoBanner() {
+      try {
+        const res = await API.get('/settings/public');
+        const env = res.environment || res.settings?.environment;
+        if (env === 'demo') {
+          const container = document.getElementById('demo-banner-container');
+          if (container) {
+            container.innerHTML = '<div class="demo-banner">DEMO MODE — Sample data &amp; simulated workflows active</div>';
+          }
+        }
+      } catch (_) {}
+    })();
+
+    // ─── Device Recent Bookings (up to 10) ───
+    function getDeviceBookings() {
+      try {
+        const raw = localStorage.getItem('rp_device_bookings');
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list.slice(0, 10) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function renderDeviceBookings() {
+      const list = getDeviceBookings();
+      const sec = document.getElementById('device-recent-section');
+      const grid = document.getElementById('device-recent-grid');
+      const countBadge = document.getElementById('device-recent-count');
+      if (!sec || !grid) return;
+
+      if (!list.length) {
+        sec.style.display = 'none';
+        return;
+      }
+      sec.style.display = 'block';
+      if (countBadge) countBadge.textContent = `${list.length} Recent`;
+
+      grid.innerHTML = list.map(b => {
+        const tok = b.tracking_token || '';
+        const shortTok = tok ? `${tok.slice(0, 14)}...` : '—';
+        const itemsText = Array.isArray(b.items) && b.items.length ? b.items.join(', ') : 'Diagnostic Booking';
+        return `
+          <div class="recent-test-card">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <strong style="font-size:var(--fs-base); color:var(--navy);">${UI.escapeHtml(b.booking_id || '—')}</strong>
+                <span class="badge badge-blue">${UI.formatCurrency(b.total_amount || 0)}</span>
+              </div>
+              <div style="font-size:var(--fs-xs); font-weight:600; color:var(--dark-text); margin-top:4px;">
+                ${UI.escapeHtml(itemsText)}
+              </div>
+              <div style="font-size:var(--fs-xs); color:var(--muted); margin-top:4px;">
+                Branch: <strong>${UI.escapeHtml(b.branch_name || '—')}</strong> · ${UI.formatDate(b.appointment_date || b.created_at)}
+              </div>
+              <div style="font-size:11px; color:var(--muted); font-family:monospace; word-break:break-all; margin-top:3px;">
+                Token: ${UI.escapeHtml(shortTok)}
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="trackFromDevice('${UI.escapeHtml(tok || b.booking_id)}')">
+                Track Booking
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.trackFromDevice = function(ref) {
+      if (!ref) return;
+      tokenInput.value = ref;
+      executeTracking(ref);
+    };
+
+    // ─── Tracking Flow ───
+    const trackForm = document.getElementById('track-form');
+    const tokenInput = document.getElementById('tracking-token-input');
+    const trackBtn = document.getElementById('track-btn');
+    const verifyPhoneBox = document.getElementById('verify-phone-box');
+    const verifyPhoneInput = document.getElementById('verify-phone-input');
+    const verifyIdBtn = document.getElementById('verify-id-btn');
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const trackResult = document.getElementById('track-result');
+
+    function saveDeviceBookingFromDetail(data) {
+      try {
+        const b = data?.booking;
+        if (!b || !b.booking_id || !b.tracking_token) return;
+        const prev = getDeviceBookings();
+        const items = Array.isArray(data.items) ? data.items.map(i => i.item_name || i.name).filter(Boolean) : [];
+        const entry = {
+          booking_id: b.booking_id,
+          tracking_token: b.tracking_token,
+          patient_name: b.patient_name || '',
+          branch_name: data.branch?.name || b.branch_name || '—',
+          appointment_type: b.appointment_type || 'branch_visit',
+          appointment_date: b.appointment_date || '',
+          appointment_time: b.appointment_time || '',
+          total_amount: b.total_amount || 0,
+          items,
+          created_at: b.created_at || new Date().toISOString()
+        };
+        const deduped = [entry, ...prev.filter(x => x.booking_id !== b.booking_id)].slice(0, 10);
+        localStorage.setItem('rp_device_bookings', JSON.stringify(deduped));
+        renderDeviceBookings();
+      } catch (_) {}
+    }
+
+    function isBookingIdFormat(val) {
+      const s = val.trim();
+      if (s.length >= 32) return false; // UUID/token format
+      return /^[A-Z]{1,6}-[A-Z0-9-]+$/i.test(s);
+    }
+
+    // Handle submit
+    trackForm.addEventListener('submit', () => {
+      const val = tokenInput.value.trim();
+      if (!val) {
+        UI.toast('Please enter a tracking token or booking ID', 'warning');
+        tokenInput.focus();
+        return;
+      }
+      executeTracking(val);
+    });
+
+    verifyIdBtn.addEventListener('click', () => {
+      const bookingId = tokenInput.value.trim();
+      const phone = verifyPhoneInput.value.trim();
+      if (!bookingId) {
+        UI.toast('Enter your Booking ID first', 'warning');
+        return;
+      }
+      if (!UI.validatePhone(phone)) {
+        UI.toast('Please enter a valid 10-digit mobile number', 'warning');
+        verifyPhoneInput.focus();
+        return;
+      }
+      executeTrackById(bookingId, phone);
+    });
+
+    // Check query params on load (e.g. ?token=RP-TRK-123 or ?id=RP-...)
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDeviceBookings();
+      const params = new URLSearchParams(window.location.search);
+      const queryToken = params.get('token') || params.get('id');
+      if (queryToken) {
+        tokenInput.value = queryToken;
+        executeTracking(queryToken);
+      }
+    });
+
+    async function executeTracking(inputVal) {
+      errorState.style.display = 'none';
+      verifyPhoneBox.style.display = 'none';
+      let token = inputVal.trim();
+
+      // If user entered a Booking ID (like RP-20261125-2F5E), check device history first!
+      if (isBookingIdFormat(token)) {
+        const match = getDeviceBookings().find(b => (b.booking_id || '').toUpperCase() === token.toUpperCase());
+        if (match && match.tracking_token) {
+          token = match.tracking_token;
+        } else {
+          // Prompt for phone verification so Booking ID works securely from any device
+          trackResult.classList.remove('active');
+          verifyPhoneBox.style.display = 'block';
+          verifyPhoneInput.focus();
+          UI.toast('Please enter your 10-digit mobile number to verify this Booking ID.', 'info');
+          return;
+        }
+      }
+
+      trackResult.classList.remove('active');
+      loadingState.style.display = 'block';
+      UI.setButtonLoading(trackBtn, true);
+
+      try {
+        const url = new URL(window.location);
+        url.searchParams.set('token', token);
+        window.history.replaceState({}, '', url);
+      } catch (_) {}
+
+      try {
+        const data = await API.get('/bookings/track/' + encodeURIComponent(token));
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(trackBtn, false);
+
+        if (!data || (!data.booking && !data.id && !data.booking_id)) {
+          showError('Booking not found', 'No booking record could be located matching this reference.');
+          return;
+        }
+
+        renderBookingDetails(data, token);
+      } catch (err) {
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(trackBtn, false);
+        const msg = err.message || 'Unable to find booking with this token.';
+        showError('Booking Not Found', msg);
+        UI.toast(msg, 'error');
+      }
+    }
+
+    async function executeTrackById(bookingId, phone) {
+      errorState.style.display = 'none';
+      trackResult.classList.remove('active');
+      loadingState.style.display = 'block';
+      UI.setButtonLoading(verifyIdBtn, true);
+
+      try {
+        const data = await API.post('/bookings/track-by-id', {
+          booking_id: bookingId,
+          phone
+        });
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(verifyIdBtn, false);
+
+        if (!data || !data.booking) {
+          showError('Booking not found', 'No matching booking found for that Booking ID and mobile number.');
+          return;
+        }
+        verifyPhoneBox.style.display = 'none';
+        const resolvedToken = data.booking.tracking_token || '';
+        saveDeviceBookingFromDetail(data);
+        renderBookingDetails(data, resolvedToken);
+      } catch (err) {
+        loadingState.style.display = 'none';
+        UI.setButtonLoading(verifyIdBtn, false);
+        const msg = err.message || 'Booking ID or mobile number did not match.';
+        showError('Verification Failed', msg);
+        UI.toast(msg, 'error');
+      }
+    }
+
+    function showError(title, message) {
+      trackResult.classList.remove('active');
+      document.getElementById('error-title').textContent = title;
+      document.getElementById('error-message').textContent = message;
+      errorState.style.display = 'block';
+      renderIcons(errorState);
+    }
+
+    function maskMobile(phone) {
+      if (!phone) return '—';
+      const str = String(phone).trim();
+      if (str.includes('•') || str.includes('*')) return str;
+      const digits = str.replace(/\D/g, '');
+      if (!digits) return '—';
+      return '••••••' + digits.slice(-4);
+    }
+
+    function renderBookingDetails(data, currentToken) {
+      const booking = data.booking || data;
+      const branch = data.branch || booking.branch || {};
+      const items = data.items || booking.items || [];
+      const payment = data.payment || booking.payment || {};
+      const reports = data.reports || booking.reports || [];
+      const recentTests = data.recent_tests || [];
+
+      // 1. Basic IDs and Badges
+      const bookingId = booking.booking_id || booking.id || 'N/A';
+      const activeToken = booking.tracking_token || currentToken || '—';
+      document.getElementById('res-booking-id').textContent = bookingId;
+      document.getElementById('res-tracking-token').textContent = activeToken;
+      document.getElementById('btn-copy-token').onclick = () => {
+        navigator.clipboard?.writeText(activeToken);
+        UI.toast('Tracking token copied!', 'success');
+      };
+      document.getElementById('res-booked-date').textContent = 'Booked on ' + (UI.formatDate(booking.created_at) || 'Recent');
+
+      // Status Badge
+      const statusBadge = document.getElementById('res-status-badge');
+      const bStatus = (booking.booking_status || 'new').toLowerCase();
+      statusBadge.className = 'status status-' + (bStatus === 'confirmed' ? 'confirmed' : bStatus === 'completed' ? 'completed' : bStatus === 'cancelled' ? 'cancelled' : 'pending');
+      statusBadge.textContent = bStatus.charAt(0).toUpperCase() + bStatus.slice(1);
+
+      // Payment Badge
+      const pStatus = (booking.payment_status || payment.payment_status || 'pending').toLowerCase();
+      const payBadge = document.getElementById('res-payment-badge');
+      if (pStatus === 'paid') {
+        payBadge.className = 'badge badge-green';
+        payBadge.textContent = 'Paid in Full';
+      } else if (pStatus === 'partial') {
+        payBadge.className = 'badge badge-yellow';
+        payBadge.textContent = 'Partial Payment';
+      } else {
+        payBadge.className = 'badge badge-red';
+        payBadge.textContent = 'Payment Pending';
+      }
+
+      // Appointment Type Badge
+      const apptType = (booking.appointment_type || 'branch_visit').toLowerCase();
+      const typeBadge = document.getElementById('res-type-badge');
+      if (apptType === 'home_collection' || apptType === 'home') {
+        typeBadge.className = 'badge badge-blue';
+        typeBadge.textContent = 'Home Collection';
+      } else {
+        typeBadge.className = 'badge badge-gray';
+        typeBadge.textContent = 'Branch Visit';
+      }
+
+      // Cancelled state
+      const isCancelled = bStatus === 'cancelled';
+      document.getElementById('cancelled-notice').style.display = isCancelled ? 'flex' : 'none';
+
+      // 2. Report Ready Callout & Links
+      const reportReadyCallout = document.getElementById('report-ready-callout');
+      const downloadBtn = document.getElementById('res-download-report-btn');
+      const reportUrl = data.reportUrl || (reports.length > 0 && (reports[0].download_url || `/api/reports/${reports[0].id}/download?token=${encodeURIComponent(currentToken)}`));
+      
+      const isReportAvailable = (booking.report_status === 'ready' || bStatus === 'completed' || reports.some(r => r.is_available == 1)) && reportUrl;
+      
+      if (isReportAvailable && !isCancelled) {
+        reportReadyCallout.style.display = 'flex';
+        downloadBtn.href = reportUrl;
+      } else {
+        reportReadyCallout.style.display = 'none';
+      }
+
+      // 3. Vertical Timeline Calculation
+      updateTimeline(booking, isCancelled);
+
+      // 4. Patient & Appointment Demographics (mask full mobile number)
+      document.getElementById('res-patient-name').textContent = booking.patient_name || '—';
+      document.getElementById('res-patient-phone').textContent = maskMobile(booking.patient_phone);
+      
+      const ageStr = booking.patient_age ? `${booking.patient_age} yrs` : '';
+      const genderStr = booking.patient_gender ? booking.patient_gender.charAt(0).toUpperCase() + booking.patient_gender.slice(1) : '';
+      const demoCombined = [ageStr, genderStr].filter(Boolean).join(' · ') || '—';
+      document.getElementById('res-patient-demographics').textContent = demoCombined;
+
+      document.getElementById('res-branch-name').textContent = branch.name || booking.branch_name || 'Ranchi Main';
+      document.getElementById('res-appointment-date').textContent = UI.formatDate(booking.appointment_date) || '—';
+      document.getElementById('res-appointment-time').textContent = UI.formatTime(booking.appointment_time) || booking.appointment_time || '—';
+
+      // Home collection address
+      const homeRow = document.getElementById('row-home-address');
+      if (apptType.includes('home') && (booking.home_address || booking.address)) {
+        homeRow.style.display = 'flex';
+        const fullAddr = [booking.home_address, booking.home_landmark, booking.home_city, booking.home_pincode].filter(Boolean).join(', ');
+        document.getElementById('res-home-address').textContent = fullAddr || booking.home_address;
+      } else {
+        homeRow.style.display = 'none';
+      }
+
+      // 5. Items & Pricing
+      const tbody = document.getElementById('res-items-tbody');
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--muted); font-size:var(--fs-xs);">Diagnostics package</td></tr>`;
+      } else {
+        items.forEach(it => {
+          const tr = document.createElement('tr');
+          const isPkg = (it.item_type || '').toLowerCase() === 'package';
+          tr.innerHTML = `
+            <td>
+              <span class="item-type-badge ${isPkg ? 'item-type-package' : 'item-type-test'}">${isPkg ? 'Package' : 'Test'}</span>
+              <strong>${UI.escapeHtml(it.item_name || it.name || 'Test Item')}</strong>
+              ${it.item_code ? `<div style="font-size:11px; color:var(--muted);">${UI.escapeHtml(it.item_code)}</div>` : ''}
+            </td>
+            <td style="text-align:center;">${it.quantity || 1}</td>
+            <td style="text-align:right; font-weight:600;">${UI.formatCurrency(it.total_price || it.price || 0)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      const subtotal = Number(booking.subtotal || booking.total_amount || 0);
+      const homeCharge = Number(booking.home_collection_charge || 0);
+      const discount = Number(booking.discount_amount || 0);
+      const total = Number(booking.total_amount || (subtotal + homeCharge - discount));
+
+      document.getElementById('res-subtotal').textContent = UI.formatCurrency(subtotal);
+      document.getElementById('res-home-charge').textContent = homeCharge > 0 ? UI.formatCurrency(homeCharge) : 'Free';
+      
+      const discRow = document.getElementById('row-discount');
+      if (discount > 0) {
+        discRow.style.display = 'flex';
+        document.getElementById('res-discount').textContent = '-' + UI.formatCurrency(discount);
+      } else {
+        discRow.style.display = 'none';
+      }
+      document.getElementById('res-total-amount').textContent = UI.formatCurrency(total);
+
+      // 6. Payment / QR Logic
+      const qrSection = document.getElementById('payment-qr-section');
+      const paidBox = document.getElementById('payment-completed-box');
+      const qrDataUrl = data.qrCodeUrl || payment.qr_data_url || payment.qrCodeUrl;
+      const upiUri = data.upiUri || payment.upi_uri || payment.payment_uri;
+      const upiId = payment.upi_id || '6204522977@ptyes';
+
+      if (pStatus === 'paid') {
+        qrSection.style.display = 'none';
+        paidBox.style.display = 'flex';
+      } else if (!isCancelled && (qrDataUrl || upiUri)) {
+        paidBox.style.display = 'none';
+        qrSection.style.display = 'block';
+
+        const qrBox = document.getElementById('qr-img-box');
+        if (qrDataUrl) {
+          qrBox.innerHTML = `<img src="${UI.escapeHtml(qrDataUrl)}" alt="UPI QR Code for Payment" />`;
+        } else {
+          // In case QR data URL is not generated yet, show QR placeholder icon
+          qrBox.innerHTML = `<div class="icon-slot" data-icon="qrCode" style="color:var(--blue); width:64px; height:64px;"></div>`;
+        }
+
+        const upiBtn = document.getElementById('btn-upi-app');
+        if (upiUri) {
+          upiBtn.href = upiUri;
+          upiBtn.style.display = 'inline-flex';
+        } else {
+          upiBtn.style.display = 'none';
+        }
+        document.getElementById('upi-id-label').textContent = upiId;
+      } else {
+        qrSection.style.display = 'none';
+        paidBox.style.display = 'none';
+      }
+
+      // 7. Recent 10 Tests by Customer
+      const recentSection = document.getElementById('recent-tests-section');
+      const recentGrid = document.getElementById('recent-tests-grid');
+      if (recentTests.length > 0) {
+        recentSection.style.display = 'block';
+        recentGrid.innerHTML = recentTests.slice(0, 10).map(rt => {
+          const st = (rt.booking_status || 'new').toLowerCase();
+          const stCls = st === 'confirmed' ? 'status-confirmed' : st === 'completed' ? 'status-completed' : st === 'cancelled' ? 'status-cancelled' : 'status-pending';
+          const shortTok = rt.tracking_token ? `${rt.tracking_token.slice(0, 12)}...` : '—';
+          return `
+            <div class="recent-test-card">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                  <strong style="font-size:var(--fs-sm); color:var(--navy);">${UI.escapeHtml(rt.item_name || 'Test')}</strong>
+                  <span class="status ${stCls}" style="flex-shrink:0;">${UI.escapeHtml(st)}</span>
+                </div>
+                <div style="font-size:var(--fs-xs); color:var(--muted); margin-top:4px;">
+                  Booking ID: <strong>${UI.escapeHtml(rt.booking_id || '—')}</strong>
+                </div>
+                <div style="font-size:11px; color:var(--muted); font-family:monospace; word-break:break-all;">
+                  Token: ${UI.escapeHtml(shortTok)}
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid rgba(20,99,197,0.08); font-size:var(--fs-xs);">
+                <span>${UI.formatDate(rt.appointment_date)} · <strong>${UI.formatCurrency(rt.total_price || 0)}</strong></span>
+                ${rt.tracking_token ? `<a href="/track-booking.html?token=${encodeURIComponent(rt.tracking_token)}" class="btn btn-secondary btn-sm" style="min-height:28px;padding:2px 10px;">View</a>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        recentSection.style.display = 'none';
+      }
+
+      // Show container and render fresh icons
+      trackResult.classList.add('active');
+      renderIcons(trackResult);
+
+      // Smooth scroll to results
+      trackResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updateTimeline(booking, isCancelled) {
+      const bStatus = (booking.booking_status || '').toLowerCase();
+      const sStatus = (booking.sample_status || '').toLowerCase();
+      const rStatus = (booking.report_status || '').toLowerCase();
+
+      // Reset all steps
+      for (let i = 1; i <= 5; i++) {
+        const item = document.getElementById('step-' + i);
+        item.className = 'timeline-item';
+      }
+
+      if (isCancelled) {
+        document.getElementById('step-1').className = 'timeline-item cancelled';
+        document.getElementById('time-step-1').textContent = 'Cancelled';
+        return;
+      }
+
+      // Step 1 is always done
+      document.getElementById('step-1').className = 'timeline-item done';
+      document.getElementById('time-step-1').textContent = UI.formatDate(booking.created_at) || 'Completed';
+
+      // Determine progression
+      // Step 2: Confirmed
+      const isConfirmed = bStatus === 'confirmed' || bStatus === 'completed' || sStatus === 'collected' || sStatus === 'received' || rStatus === 'ready';
+      // Step 3: Sample Collected
+      const isSampleCollected = sStatus === 'collected' || sStatus === 'received' || rStatus === 'processing' || rStatus === 'ready' || bStatus === 'completed';
+      // Step 4: Processing
+      const isProcessing = rStatus === 'processing' || rStatus === 'ready' || bStatus === 'completed';
+      // Step 5: Report Ready
+      const isReportReady = rStatus === 'ready' || rStatus === 'delivered' || bStatus === 'completed';
+
+      // Step 2 state
+      const s2 = document.getElementById('step-2');
+      if (isConfirmed) {
+        s2.className = 'timeline-item done';
+        document.getElementById('time-step-2').textContent = 'Confirmed';
+      } else {
+        s2.className = 'timeline-item active';
+        document.getElementById('time-step-2').textContent = 'In Progress';
+      }
+
+      // Step 3 state
+      const s3 = document.getElementById('step-3');
+      if (isSampleCollected) {
+        s3.className = 'timeline-item done';
+        document.getElementById('time-step-3').textContent = 'Collected';
+      } else if (isConfirmed) {
+        s3.className = 'timeline-item active';
+        document.getElementById('time-step-3').textContent = 'Scheduled';
+      } else {
+        s3.className = 'timeline-item';
+        document.getElementById('time-step-3').textContent = 'Pending';
+      }
+
+      // Step 4 state
+      const s4 = document.getElementById('step-4');
+      if (isProcessing) {
+        s4.className = 'timeline-item done';
+        document.getElementById('time-step-4').textContent = 'Tested';
+      } else if (isSampleCollected) {
+        s4.className = 'timeline-item active';
+        document.getElementById('time-step-4').textContent = 'Analyzing';
+      } else {
+        s4.className = 'timeline-item';
+        document.getElementById('time-step-4').textContent = 'Pending';
+      }
+
+      // Step 5 state
+      const s5 = document.getElementById('step-5');
+      if (isReportReady) {
+        s5.className = 'timeline-item done';
+        document.getElementById('time-step-5').textContent = 'Available';
+      } else if (isProcessing) {
+        s5.className = 'timeline-item active';
+        document.getElementById('time-step-5').textContent = 'Awaiting Sign-off';
+      } else {
+        s5.className = 'timeline-item';
+        document.getElementById('time-step-5').textContent = 'Pending';
+      }
+    }
+  </script>
+</body>
+</html>

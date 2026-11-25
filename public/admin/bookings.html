@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookings — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <!-- Filters -->
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field" style="flex:2;min-width:220px">
+              <label for="search-input">Search</label>
+              <input type="text" id="search-input" class="form-input" placeholder="Booking ID, patient name, or phone...">
+            </div>
+            <div class="filter-field">
+              <label for="filter-branch">Branch</label>
+              <select id="filter-branch" class="form-input">
+                <option value="">All Branches</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="filter-status">Booking Status</label>
+              <select id="filter-status" class="form-input">
+                <option value="">All Statuses</option>
+                <option value="new">New</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="sample_collected">Sample Collected</option>
+                <option value="processing">Processing</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="filter-payment">Payment</label>
+              <select id="filter-payment" class="form-input">
+                <option value="">All Payments</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="filter-type">Appointment Type</label>
+              <select id="filter-type" class="form-input">
+                <option value="">All Types</option>
+                <option value="branch_visit">Branch Visit</option>
+                <option value="home_collection">Home Collection</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="filter-from">From Date</label>
+              <input type="date" id="filter-from" class="form-input">
+            </div>
+            <div class="filter-field">
+              <label for="filter-to">To Date</label>
+              <input type="date" id="filter-to" class="form-input">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button type="button" class="btn btn-primary btn-sm" id="filter-apply-btn">Filter</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="filter-reset-btn">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bookings List -->
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">All Bookings <span id="bookings-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+            <button type="button" class="btn btn-secondary btn-sm" id="refresh-bookings-btn">Refresh</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Patient</th>
+                  <th>Branch</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-tbody">
+                <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Loading bookings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="bookings-cards"></div>
+          <div class="pagination" id="bookings-pagination"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Booking Detail Drawer -->
+  <div class="drawer-overlay" id="booking-drawer">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div>
+          <h2 class="modal-title" id="drawer-booking-title">Booking Details</h2>
+          <p id="drawer-booking-sub" style="font-size:var(--fs-xs);color:var(--muted)"></p>
+        </div>
+        <button class="modal-close" id="drawer-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="drawer-body" id="drawer-body">
+        <div class="spinner" style="margin-top:3rem"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verify Payment Modal -->
+  <div class="modal-overlay" id="verify-payment-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Verify Payment</h3>
+        <button class="modal-close" data-close-modal="verify-payment-modal">&times;</button>
+      </div>
+      <form id="verify-payment-form">
+        <div class="modal-body">
+          <input type="hidden" id="vp-payment-id">
+          <div class="form-group">
+            <label class="form-label" for="vp-utr">UTR / Transaction Reference *</label>
+            <input type="text" id="vp-utr" class="form-input" placeholder="e.g. 432198765432" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vp-date">Transaction Date</label>
+            <input type="datetime-local" id="vp-date" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vp-notes">Admin Notes</label>
+            <textarea id="vp-notes" class="form-input" placeholder="Verification notes..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="verify-payment-modal">Cancel</button>
+          <button type="submit" class="btn btn-success" id="vp-submit-btn">Verify Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Upload Report Modal -->
+  <div class="modal-overlay" id="upload-report-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Upload Medical Report</h3>
+        <button class="modal-close" data-close-modal="upload-report-modal">&times;</button>
+      </div>
+      <form id="upload-report-form">
+        <div class="modal-body">
+          <input type="hidden" id="ur-booking-id">
+          <div class="form-group">
+            <label class="form-label" for="ur-title">Report Title *</label>
+            <input type="text" id="ur-title" class="form-input" placeholder="e.g. Complete Blood Count Report" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ur-file">Report File (PDF, JPG, PNG) *</label>
+            <input type="file" id="ur-file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+          </div>
+          <label class="switch-label">
+            <input type="checkbox" id="ur-available" class="switch-input" checked>
+            <span>Make immediately available to patient</span>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="upload-report-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="ur-submit-btn">Upload Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let currentPage = 1;
+      let currentDetailId = null;
+
+      async function loadBranches() {
+        try {
+          const res = await API.get('/branches');
+          const branches = AdminCommon.unwrapList(res, ['branches', 'data']);
+          const sel = document.getElementById('filter-branch');
+          branches.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.name;
+            sel.appendChild(opt);
+          });
+        } catch { /* ignore */ }
+      }
+
+      async function loadBookings(page = 1) {
+        currentPage = page;
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('limit', '20');
+
+        const search = document.getElementById('search-input').value.trim();
+        const branch = document.getElementById('filter-branch').value;
+        const status = document.getElementById('filter-status').value;
+        const payment = document.getElementById('filter-payment').value;
+        const type = document.getElementById('filter-type').value;
+        const from = document.getElementById('filter-from').value;
+        const to = document.getElementById('filter-to').value;
+
+        if (search) params.set('search', search);
+        if (branch) params.set('branch_id', branch);
+        if (status) params.set('status', status);
+        if (payment) params.set('payment_status', payment);
+        if (type) params.set('appointment_type', type);
+        if (from) { params.set('from', from); params.set('start_date', from); }
+        if (to) { params.set('to', to); params.set('end_date', to); }
+
+        try {
+          const res = await API.get(`/admin/bookings?${params.toString()}`);
+          const list = AdminCommon.unwrapList(res, ['bookings', 'data', 'items']);
+          const total = res.total ?? res.pagination?.total ?? list.length;
+          const totalPages = res.total_pages ?? res.totalPages ?? res.pagination?.totalPages ?? 1;
+          document.getElementById('bookings-count').textContent = String(total);
+          renderBookings(list);
+          AdminCommon.renderPagination('bookings-pagination', currentPage, totalPages, loadBookings);
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load bookings', 'error');
+        }
+      }
+
+      function renderBookings(list) {
+        const tbody = document.getElementById('bookings-tbody');
+        const cards = document.getElementById('bookings-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('calendar', 'No bookings found', 'Try adjusting your search or filter criteria.');
+          tbody.innerHTML = `<tr><td colspan="8">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        tbody.innerHTML = list.map(b => {
+          const st = b.booking_status || b.status || 'new';
+          return `
+            <tr>
+              <td>
+                <a href="javascript:void(0)" class="open-detail-link" data-id="${b.id}" style="font-weight:700">
+                  ${UI.escapeHtml(b.booking_id || String(b.id))}
+                </a>
+              </td>
+              <td>
+                <div style="font-weight:600">${UI.escapeHtml(b.patient_name || '—')}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(b.patient_phone || '')}</div>
+              </td>
+              <td>${UI.escapeHtml(b.branch_name || '—')}</td>
+              <td>
+                <div>${UI.formatDate(b.appointment_date)}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(b.appointment_time || '')} · ${UI.escapeHtml((b.appointment_type || '').replace(/_/g, ' '))}</div>
+              </td>
+              <td>${AdminCommon.statusBadge(st)}</td>
+              <td>${AdminCommon.paymentBadge(b.payment_status)}</td>
+              <td><strong>${UI.formatCurrency(b.total_amount || 0)}</strong></td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn btn-secondary btn-sm open-detail-link" data-id="${b.id}">View</button>
+                  ${st === 'new' || st === 'pending' ? `<button class="btn btn-success btn-sm quick-confirm-btn" data-id="${b.id}">Confirm</button>` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        cards.innerHTML = list.map(b => {
+          const st = b.booking_status || b.status || 'new';
+          return `
+            <div class="data-card">
+              <div class="data-card-header">
+                <div>
+                  <div class="data-card-title">${UI.escapeHtml(b.booking_id || String(b.id))}</div>
+                  <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(b.patient_name || '—')} · ${UI.escapeHtml(b.patient_phone || '')}</div>
+                </div>
+                ${AdminCommon.statusBadge(st)}
+              </div>
+              <div class="data-card-meta">
+                <div>Branch<strong>${UI.escapeHtml(b.branch_name || '—')}</strong></div>
+                <div>Date<strong>${UI.formatDate(b.appointment_date)}</strong></div>
+                <div>Amount<strong>${UI.formatCurrency(b.total_amount || 0)}</strong></div>
+                <div>Payment<div>${AdminCommon.paymentBadge(b.payment_status)}</div></div>
+              </div>
+              <div class="data-card-actions">
+                <button class="btn btn-primary btn-sm open-detail-link" data-id="${b.id}">View Details</button>
+                ${st === 'new' || st === 'pending' ? `<button class="btn btn-success btn-sm quick-confirm-btn" data-id="${b.id}">Confirm</button>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.querySelectorAll('.open-detail-link').forEach(el => {
+          el.addEventListener('click', () => openBookingDetail(el.dataset.id));
+        });
+        document.querySelectorAll('.quick-confirm-btn').forEach(el => {
+          el.addEventListener('click', () => updateBookingStatus(el.dataset.id, 'confirmed', el));
+        });
+      }
+
+      async function openBookingDetail(id) {
+        currentDetailId = id;
+        const drawer = document.getElementById('booking-drawer');
+        const body = document.getElementById('drawer-body');
+        drawer.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        body.innerHTML = '<div class="spinner" style="margin-top:3rem"></div>';
+
+        try {
+          const data = await API.get(`/admin/bookings/${id}`);
+          const b = data.booking || data;
+          const items = AdminCommon.unwrapList(data.items || b.items, ['items', 'data']);
+          const payment = data.payment || (Array.isArray(data.payments) ? data.payments[0] : null);
+          const paymentsList = AdminCommon.unwrapList(data.payments || (payment ? [payment] : []), ['payments', 'data']);
+          const reports = AdminCommon.unwrapList(data.reports, ['reports', 'data']);
+          const waMessages = AdminCommon.unwrapList(data.whatsapp_messages || data.whatsappMessages || data.messages, ['messages', 'data']);
+
+          document.getElementById('drawer-booking-title').textContent = `Booking ${b.booking_id || b.id}`;
+          document.getElementById('drawer-booking-sub').textContent = `Created ${UI.formatDateTime(b.created_at)}`;
+
+          const st = b.booking_status || b.status || 'new';
+          const activePayment = payment || paymentsList[0] || null;
+
+          body.innerHTML = `
+            <!-- Quick Actions -->
+            <div class="detail-section">
+              <div class="detail-section-title">Actions &amp; Status</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                ${st !== 'confirmed' && st !== 'completed' && st !== 'cancelled' ? `<button class="btn btn-success btn-sm" id="d-confirm-btn">Confirm Booking</button>` : ''}
+                ${st !== 'cancelled' && st !== 'completed' ? `<button class="btn btn-danger btn-sm" id="d-cancel-btn">Cancel Booking</button>` : ''}
+                <button class="btn btn-primary btn-sm" id="d-gen-qr-btn">${activePayment?.qr_data_url ? 'Regenerate UPI QR' : 'Generate UPI QR'}</button>
+                ${activePayment && activePayment.payment_status !== 'verified' ? `<button class="btn btn-success btn-sm" id="d-verify-pay-btn">Verify Payment</button>` : ''}
+                <button class="btn btn-secondary btn-sm" id="d-upload-report-btn">Upload Report</button>
+                <button class="btn btn-secondary btn-sm" id="d-send-wa-btn">Send QR on WhatsApp</button>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <select id="d-status-select" class="form-input" style="max-width:220px;min-height:38px;padding:6px 12px;font-size:var(--fs-sm)">
+                  ${['new', 'confirmed', 'sample_collected', 'processing', 'completed', 'cancelled'].map(opt =>
+                    `<option value="${opt}" ${st === opt ? 'selected' : ''}>${opt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>`
+                  ).join('')}
+                </select>
+                <button class="btn btn-primary btn-sm" id="d-update-status-btn">Update Status</button>
+              </div>
+            </div>
+
+            <!-- Patient Info -->
+            <div class="detail-section">
+              <div class="detail-section-title">Patient &amp; Appointment Info</div>
+              <div class="detail-kv-grid">
+                <div><div class="detail-kv-label">Patient Name</div><div class="detail-kv-val">${UI.escapeHtml(b.patient_name || '—')}</div></div>
+                <div><div class="detail-kv-label">Phone</div><div class="detail-kv-val">${UI.escapeHtml(b.patient_phone || '—')}</div></div>
+                <div><div class="detail-kv-label">Age / Gender</div><div class="detail-kv-val">${b.patient_age || '—'} / ${UI.escapeHtml(b.patient_gender || '—')}</div></div>
+                <div><div class="detail-kv-label">Email</div><div class="detail-kv-val">${UI.escapeHtml(b.patient_email || '—')}</div></div>
+                <div><div class="detail-kv-label">Branch</div><div class="detail-kv-val">${UI.escapeHtml(b.branch_name || '—')}</div></div>
+                <div><div class="detail-kv-label">Type</div><div class="detail-kv-val">${UI.escapeHtml((b.appointment_type || '').replace(/_/g, ' '))}</div></div>
+                <div><div class="detail-kv-label">Appointment Date</div><div class="detail-kv-val">${UI.formatDate(b.appointment_date)} (${UI.escapeHtml(b.appointment_time || '—')})</div></div>
+                <div><div class="detail-kv-label">Status</div><div>${AdminCommon.statusBadge(st)} ${AdminCommon.paymentBadge(b.payment_status)}</div></div>
+              </div>
+              ${b.appointment_type === 'home_collection' ? `
+                <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(20,99,197,0.08);font-size:var(--fs-sm)">
+                  <div class="detail-kv-label">Home Collection Address</div>
+                  <div class="detail-kv-val">${UI.escapeHtml([b.home_address, b.home_landmark, b.home_city, b.home_pincode].filter(Boolean).join(', ') || '—')}</div>
+                  ${b.home_contact_instructions ? `<div style="font-size:var(--fs-xs);color:var(--muted);margin-top:4px">Instructions: ${UI.escapeHtml(b.home_contact_instructions)}</div>` : ''}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Tests & Pricing -->
+            <div class="detail-section">
+              <div class="detail-section-title">Tests &amp; Pricing</div>
+              ${items.length ? items.map(it => `
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-sm)">
+                  <span>${UI.escapeHtml(it.item_name || it.name)} <small style="color:var(--muted)">(${UI.escapeHtml(it.item_type || 'test')})</small></span>
+                  <strong>${UI.formatCurrency(it.total_price ?? it.unit_price ?? 0)}</strong>
+                </div>
+              `).join('') : '<p style="font-size:var(--fs-sm);color:var(--muted)">No item breakdown available</p>'}
+              <div style="margin-top:10px;font-size:var(--fs-sm);display:flex;flex-direction:column;gap:4px">
+                <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>${UI.formatCurrency(b.subtotal || 0)}</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Home Collection</span><span>${UI.formatCurrency(b.home_collection_charge || 0)}</span></div>
+                ${Number(b.discount_amount) > 0 ? `<div style="display:flex;justify-content:space-between;color:var(--success)"><span>Discount ${b.coupon_code ? `(${UI.escapeHtml(b.coupon_code)})` : ''}</span><span>-${UI.formatCurrency(b.discount_amount)}</span></div>` : ''}
+                <div style="display:flex;justify-content:space-between;font-weight:800;color:var(--navy);font-size:var(--fs-base);padding-top:6px;border-top:1px solid rgba(20,99,197,0.12)">
+                  <span>Total Amount</span><span>${UI.formatCurrency(b.total_amount || 0)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment & QR -->
+            <div class="detail-section">
+              <div class="detail-section-title">Payment &amp; UPI QR</div>
+              ${activePayment ? `
+                <div class="detail-kv-grid" style="margin-bottom:12px">
+                  <div><div class="detail-kv-label">Payment Ref</div><div class="detail-kv-val">${UI.escapeHtml(activePayment.payment_ref || '—')}</div></div>
+                  <div><div class="detail-kv-label">Status</div><div>${AdminCommon.paymentBadge(activePayment.payment_status)}</div></div>
+                  <div><div class="detail-kv-label">Amount</div><div class="detail-kv-val">${UI.formatCurrency(activePayment.amount || b.total_amount || 0)}</div></div>
+                  <div><div class="detail-kv-label">UTR Number</div><div class="detail-kv-val">${UI.escapeHtml(activePayment.utr_number || '—')}</div></div>
+                </div>
+                ${(activePayment.qr_data_url || data.qrCodeUrl) ? `
+                  <div class="qr-preview-box">
+                    <img src="${activePayment.qr_data_url || data.qrCodeUrl}" alt="UPI Payment QR">
+                    <div style="font-size:var(--fs-xs);color:var(--muted)">UPI: ${UI.escapeHtml(activePayment.upi_id || '')}</div>
+                  </div>
+                ` : ''}
+              ` : '<p style="font-size:var(--fs-sm);color:var(--muted)">No payment QR generated yet. Click "Generate UPI QR" above.</p>'}
+            </div>
+
+            <!-- Reports -->
+            <div class="detail-section">
+              <div class="detail-section-title">Uploaded Reports (${reports.length})</div>
+              ${reports.length ? reports.map(r => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-sm)">
+                  <div>
+                    <div style="font-weight:600">${UI.escapeHtml(r.title || r.file_name)}</div>
+                    <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.formatDateTime(r.created_at)} · ${r.is_available ? 'Visible to patient' : 'Hidden'}</div>
+                  </div>
+                  <a href="/api/reports/download/${r.id}?token=${encodeURIComponent(b.tracking_token || '')}" target="_blank" class="btn btn-secondary btn-sm">Open</a>
+                </div>
+              `).join('') : '<p style="font-size:var(--fs-sm);color:var(--muted)">No reports uploaded yet.</p>'}
+            </div>
+
+            <!-- Internal Notes -->
+            <div class="detail-section">
+              <div class="detail-section-title">Internal Notes</div>
+              <div style="white-space:pre-wrap;font-size:var(--fs-sm);color:var(--dark-text);margin-bottom:12px;background:rgba(255,255,255,0.7);padding:10px;border-radius:var(--radius-sm)">${UI.escapeHtml(b.internal_notes || 'No internal notes yet.')}</div>
+              <form id="d-note-form" style="display:flex;gap:8px">
+                <input type="text" id="d-note-input" class="form-input" placeholder="Add internal note..." style="min-height:40px" required>
+                <button type="submit" class="btn btn-primary btn-sm" id="d-note-btn">Add Note</button>
+              </form>
+            </div>
+
+            <!-- WhatsApp History -->
+            <div class="detail-section">
+              <div class="detail-section-title">WhatsApp History (${waMessages.length})</div>
+              ${waMessages.length ? waMessages.map(m => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-xs)">
+                  <div>
+                    <strong>${UI.escapeHtml(m.message_type || 'message')}</strong> to ${UI.escapeHtml(m.customer_phone || '')}
+                    <div style="color:var(--muted)">${UI.formatDateTime(m.created_at)}</div>
+                  </div>
+                  ${AdminCommon.statusBadge(m.status)}
+                </div>
+              `).join('') : '<p style="font-size:var(--fs-sm);color:var(--muted)">No WhatsApp messages sent for this booking.</p>'}
+            </div>
+          `;
+
+          // Bind drawer action buttons
+          document.getElementById('d-confirm-btn')?.addEventListener('click', (e) => updateBookingStatus(b.id, 'confirmed', e.target));
+          document.getElementById('d-cancel-btn')?.addEventListener('click', () => {
+            UI.confirm('Cancel this booking? This will notify the system and release slot capacity.', () => {
+              updateBookingStatus(b.id, 'cancelled');
+            }, 'Cancel Booking');
+          });
+          document.getElementById('d-update-status-btn')?.addEventListener('click', (e) => {
+            const nextStatus = document.getElementById('d-status-select').value;
+            updateBookingStatus(b.id, nextStatus, e.target);
+          });
+          document.getElementById('d-gen-qr-btn')?.addEventListener('click', async (e) => {
+            const btn = e.target;
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/payments/${b.id}/generate-qr`, {});
+              UI.toast('UPI Payment QR generated', 'success');
+              openBookingDetail(b.id);
+              loadBookings(currentPage);
+            } catch (err) {
+              UI.toast(err.message || 'Failed to generate QR', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+          document.getElementById('d-verify-pay-btn')?.addEventListener('click', () => {
+            document.getElementById('vp-payment-id').value = activePayment.id;
+            document.getElementById('vp-utr').value = '';
+            document.getElementById('vp-notes').value = '';
+            UI.openModal('verify-payment-modal');
+          });
+          document.getElementById('d-upload-report-btn')?.addEventListener('click', () => {
+            document.getElementById('ur-booking-id').value = b.id;
+            document.getElementById('ur-title').value = `${b.patient_name || 'Patient'} - Lab Report`;
+            document.getElementById('ur-file').value = '';
+            UI.openModal('upload-report-modal');
+          });
+          document.getElementById('d-send-wa-btn')?.addEventListener('click', async (e) => {
+            const btn = e.target;
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/whatsapp/send-qr/${b.id}`, {});
+              UI.toast('WhatsApp message queued/sent', 'success');
+              openBookingDetail(b.id);
+            } catch (err) {
+              UI.toast(err.message || 'Failed to send WhatsApp message', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+          document.getElementById('d-note-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const note = document.getElementById('d-note-input').value.trim();
+            if (!note) return;
+            const btn = document.getElementById('d-note-btn');
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/bookings/${b.id}/notes`, { note });
+              UI.toast('Note added', 'success');
+              openBookingDetail(b.id);
+            } catch (err) {
+              UI.toast(err.message || 'Failed to add note', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+        } catch (err) {
+          body.innerHTML = AdminCommon.emptyStateHTML('clipboard', 'Failed to load booking', err.message || 'Error loading details');
+        }
+      }
+
+      async function updateBookingStatus(id, status, btn = null) {
+        if (btn) UI.setButtonLoading(btn, true);
+        try {
+          await API.patch(`/admin/bookings/${id}/status`, { status, booking_status: status });
+          UI.toast(`Booking status updated to ${status.replace(/_/g, ' ')}`, 'success');
+          await loadBookings(currentPage);
+          if (currentDetailId && String(currentDetailId) === String(id) && document.getElementById('booking-drawer').classList.contains('open')) {
+            await openBookingDetail(id);
+          }
+        } catch (err) {
+          UI.toast(err.message || 'Failed to update status', 'error');
+        } finally {
+          if (btn) UI.setButtonLoading(btn, false);
+        }
+      }
+
+      function closeDrawer() {
+        document.getElementById('booking-drawer').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'bookings',
+          title: 'Bookings',
+          subtitle: 'Manage patient appointments, payments, and test status',
+        });
+
+        document.getElementById('drawer-close-btn').addEventListener('click', closeDrawer);
+        document.getElementById('booking-drawer').addEventListener('click', (e) => {
+          if (e.target.id === 'booking-drawer') closeDrawer();
+        });
+
+        document.getElementById('filter-apply-btn').addEventListener('click', () => loadBookings(1));
+        document.getElementById('refresh-bookings-btn').addEventListener('click', () => loadBookings(currentPage));
+        document.getElementById('search-input').addEventListener('input', UI.debounce(() => loadBookings(1), 350));
+        document.getElementById('filter-reset-btn').addEventListener('click', () => {
+          ['search-input', 'filter-branch', 'filter-status', 'filter-payment', 'filter-type', 'filter-from', 'filter-to']
+            .forEach(id => { document.getElementById(id).value = ''; });
+          loadBookings(1);
+        });
+
+        document.getElementById('verify-payment-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const paymentId = document.getElementById('vp-payment-id').value;
+          const btn = document.getElementById('vp-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.post(`/admin/payments/${paymentId}/verify`, {
+              utr_number: document.getElementById('vp-utr').value.trim(),
+              transaction_date: document.getElementById('vp-date').value || undefined,
+              admin_notes: document.getElementById('vp-notes').value.trim(),
+            });
+            UI.toast('Payment verified successfully', 'success');
+            UI.closeModal('verify-payment-modal');
+            loadBookings(currentPage);
+            if (currentDetailId) openBookingDetail(currentDetailId);
+          } catch (err) {
+            UI.toast(err.message || 'Verification failed', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        document.getElementById('upload-report-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fileInput = document.getElementById('ur-file');
+          if (!fileInput.files.length) return;
+          const fd = new FormData();
+          fd.append('booking_id', document.getElementById('ur-booking-id').value);
+          fd.append('title', document.getElementById('ur-title').value.trim());
+          fd.append('is_available', document.getElementById('ur-available').checked ? '1' : '0');
+          fd.append('file', fileInput.files[0]);
+
+          const btn = document.getElementById('ur-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.upload('/admin/reports/upload', fd);
+            UI.toast('Report uploaded successfully', 'success');
+            UI.closeModal('upload-report-modal');
+            loadBookings(currentPage);
+            if (currentDetailId) openBookingDetail(currentDetailId);
+          } catch (err) {
+            UI.toast(err.message || 'Upload failed', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        await loadBranches();
+        await loadBookings(1);
+
+        const urlId = new URLSearchParams(window.location.search).get('id');
+        if (urlId) openBookingDetail(urlId);
+      });
+    })();
+  </script>
+</body>
+</html>

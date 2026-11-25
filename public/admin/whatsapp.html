@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Logs — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field" style="flex:2;min-width:200px">
+              <label for="wa-booking-filter">Booking ID or Phone</label>
+              <input type="text" id="wa-booking-filter" class="form-input" placeholder="Filter by booking ID or phone...">
+            </div>
+            <div class="filter-field">
+              <label for="wa-status-filter">Delivery Status</label>
+              <select id="wa-status-filter" class="form-input">
+                <option value="">All Statuses</option>
+                <option value="queued">Queued</option>
+                <option value="sent">Sent</option>
+                <option value="delivered">Delivered</option>
+                <option value="read">Read</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="wa-refresh-btn">Refresh</button>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">WhatsApp Message Log <span id="wa-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking</th>
+                  <th>Phone</th>
+                  <th>Type / Template</th>
+                  <th>Status</th>
+                  <th>Timestamps</th>
+                  <th>Details</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="wa-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">Loading messages...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="wa-cards"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let messages = [];
+
+      async function loadMessages() {
+        const status = document.getElementById('wa-status-filter').value;
+        const bookingQ = document.getElementById('wa-booking-filter').value.trim();
+        const params = new URLSearchParams();
+        if (status) params.set('status', status);
+        if (bookingQ) params.set('booking_id', bookingQ);
+
+        try {
+          const res = await API.get(`/admin/whatsapp/messages?${params.toString()}`);
+          messages = AdminCommon.unwrapList(res, ['messages', 'data', 'items']);
+          renderMessages();
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load WhatsApp logs', 'error');
+        }
+      }
+
+      function renderMessages() {
+        const q = document.getElementById('wa-booking-filter').value.trim().toLowerCase();
+        const st = document.getElementById('wa-status-filter').value;
+        const list = messages.filter(m => {
+          if (st && m.status !== st) return false;
+          if (!q) return true;
+          return (m.booking_code || String(m.booking_id || '')).toLowerCase().includes(q)
+            || (m.customer_phone || '').toLowerCase().includes(q);
+        });
+
+        document.getElementById('wa-count').textContent = String(list.length);
+        const tbody = document.getElementById('wa-tbody');
+        const cards = document.getElementById('wa-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('whatsapp', 'No WhatsApp messages found', 'Sent QR codes and report notifications will appear here.');
+          tbody.innerHTML = `<tr><td colspan="7">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        tbody.innerHTML = list.map(m => `
+          <tr>
+            <td>
+              ${m.booking_id ? `<a href="/admin/bookings.html?id=${encodeURIComponent(m.booking_id)}" style="font-weight:700">${UI.escapeHtml(m.booking_code || `#${m.booking_id}`)}</a>` : '—'}
+            </td>
+            <td>${UI.escapeHtml(m.customer_phone || '—')}</td>
+            <td>
+              <div style="font-weight:600">${UI.escapeHtml((m.message_type || 'payment_qr').replace(/_/g, ' '))}</div>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(m.template_name || '')}</div>
+            </td>
+            <td>${AdminCommon.statusBadge(m.status)}</td>
+            <td style="font-size:var(--fs-xs)">
+              <div>Created: ${UI.formatDateTime(m.created_at)}</div>
+              ${m.delivered_at ? `<div style="color:var(--success)">Delivered: ${UI.formatDateTime(m.delivered_at)}</div>` : ''}
+              ${m.read_at ? `<div style="color:var(--blue)">Read: ${UI.formatDateTime(m.read_at)}</div>` : ''}
+            </td>
+            <td style="font-size:var(--fs-xs);max-width:220px">
+              ${m.failure_reason ? `<span style="color:var(--danger)">${UI.escapeHtml(m.failure_reason)}</span>` : (m.whatsapp_message_id ? `<span style="color:var(--muted)">ID: ${UI.escapeHtml(m.whatsapp_message_id)}</span>` : '—')}
+            </td>
+            <td>
+              ${m.status === 'failed' && m.booking_id ? `<button class="btn btn-primary btn-sm retry-wa-btn" data-id="${m.id}" data-booking="${m.booking_id}" data-type="${UI.escapeHtml(m.message_type || 'payment_qr')}">Retry</button>` : '—'}
+            </td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(m => `
+          <div class="data-card">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(m.booking_code || (m.booking_id ? `#${m.booking_id}` : 'Message'))}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(m.customer_phone || '—')} · ${UI.escapeHtml(m.message_type || '')}</div>
+              </div>
+              ${AdminCommon.statusBadge(m.status)}
+            </div>
+            <div class="data-card-meta">
+              <div>Created<strong>${UI.formatDateTime(m.created_at)}</strong></div>
+              <div>Retries<strong>${m.retry_count || 0}</strong></div>
+            </div>
+            ${m.failure_reason ? `<div style="font-size:var(--fs-xs);color:var(--danger)">${UI.escapeHtml(m.failure_reason)}</div>` : ''}
+            ${m.status === 'failed' && m.booking_id ? `
+              <div class="data-card-actions">
+                <button class="btn btn-primary btn-sm retry-wa-btn" data-id="${m.id}" data-booking="${m.booking_id}" data-type="${UI.escapeHtml(m.message_type || 'payment_qr')}">Retry Message</button>
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.retry-wa-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/whatsapp/send-qr/${btn.dataset.booking}`, {
+                retry_message_id: Number(btn.dataset.id),
+                message_type: btn.dataset.type,
+              });
+              UI.toast('Message retry triggered', 'success');
+              await loadMessages();
+            } catch (err) {
+              UI.toast(err.message || 'Retry failed', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'whatsapp',
+          title: 'WhatsApp Logs',
+          subtitle: 'Monitor message delivery status and retry failed notifications',
+        });
+
+        await loadMessages();
+
+        document.getElementById('wa-booking-filter').addEventListener('input', UI.debounce(renderMessages, 250));
+        document.getElementById('wa-status-filter').addEventListener('change', loadMessages);
+        document.getElementById('wa-refresh-btn').addEventListener('click', loadMessages);
+      });
+    })();
+  </script>
+</body>
+</html>

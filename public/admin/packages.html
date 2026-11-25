@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Packages Management — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="admin-toolbar">
+          <div style="flex:1;max-width:320px">
+            <input type="text" id="pkg-search" class="form-input" placeholder="Search health packages..." style="min-height:40px">
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" id="add-pkg-btn">Create Package</button>
+        </div>
+
+        <div class="grid grid-3" id="packages-grid">
+          <div class="glass-card-static"><div class="skeleton" style="height:180px"></div></div>
+          <div class="glass-card-static"><div class="skeleton" style="height:180px"></div></div>
+          <div class="glass-card-static"><div class="skeleton" style="height:180px"></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create / Edit Package Modal -->
+  <div class="modal-overlay" id="pkg-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="pkg-modal-title">Create Package</h3>
+        <button class="modal-close" data-close-modal="pkg-modal">&times;</button>
+      </div>
+      <form id="pkg-form">
+        <div class="modal-body">
+          <input type="hidden" id="p-id">
+          <div class="form-group">
+            <label class="form-label" for="p-name">Package Name *</label>
+            <input type="text" id="p-name" class="form-input" placeholder="e.g. Full Body Checkup" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="p-desc">Description</label>
+            <textarea id="p-desc" class="form-input" placeholder="Describe what this health package covers..."></textarea>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="p-orig-price">Original Price (₹) *</label>
+              <input type="number" id="p-orig-price" class="form-input" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="p-offer-price">Offer Price (₹) *</label>
+              <input type="number" id="p-offer-price" class="form-input" min="0" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Included Tests (<span id="p-selected-count">0</span> selected)</label>
+            <input type="text" id="p-test-filter" class="form-input" placeholder="Filter tests..." style="min-height:38px;margin-bottom:8px;font-size:var(--fs-sm)">
+            <div class="multi-select-box" id="p-tests-box"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Branch Availability</label>
+            <div class="checkbox-pills" id="p-branches-box"></div>
+          </div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <label class="switch-label">
+              <input type="checkbox" id="p-home" class="switch-input" checked>
+              <span>Home Collection Available</span>
+            </label>
+            <label class="switch-label">
+              <input type="checkbox" id="p-active" class="switch-input" checked>
+              <span>Active</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="pkg-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="p-submit-btn">Save Package</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let allPackages = [];
+      let allTests = [];
+      let branches = [];
+      let selectedTestIds = new Set();
+
+      async function loadMetadata() {
+        const [testsRes, brRes] = await Promise.all([
+          API.get('/tests?include_inactive=1&all=1&limit=500').catch(() => []),
+          API.get('/branches').catch(() => []),
+        ]);
+        allTests = AdminCommon.unwrapList(testsRes, ['tests', 'data', 'items']);
+        branches = AdminCommon.unwrapList(brRes, ['branches', 'data']);
+
+        document.getElementById('p-branches-box').innerHTML = branches.map(b => `
+          <label class="checkbox-pill">
+            <input type="checkbox" name="p-branch" value="${b.id}" checked>
+            <span>${UI.escapeHtml(b.name)}</span>
+          </label>
+        `).join('');
+      }
+
+      function renderTestsMultiSelect(filter = '') {
+        const q = filter.trim().toLowerCase();
+        const box = document.getElementById('p-tests-box');
+        const filtered = allTests.filter(t =>
+          !q || (t.name || '').toLowerCase().includes(q) || (t.test_code || '').toLowerCase().includes(q)
+        );
+        box.innerHTML = filtered.map(t => {
+          const checked = selectedTestIds.has(String(t.id)) ? 'checked' : '';
+          return `
+            <label class="multi-select-item">
+              <span style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" class="pkg-test-cb" value="${t.id}" ${checked}>
+                <span>${UI.escapeHtml(t.name)} <small style="color:var(--muted)">(${UI.escapeHtml(t.test_code || '')})</small></span>
+              </span>
+              <strong>${UI.formatCurrency(t.discounted_price || t.price)}</strong>
+            </label>
+          `;
+        }).join('') || '<div style="padding:1rem;text-align:center;color:var(--muted);font-size:var(--fs-sm)">No matching tests</div>';
+
+        box.querySelectorAll('.pkg-test-cb').forEach(cb => {
+          cb.addEventListener('change', () => {
+            if (cb.checked) selectedTestIds.add(String(cb.value));
+            else selectedTestIds.delete(String(cb.value));
+            document.getElementById('p-selected-count').textContent = String(selectedTestIds.size);
+          });
+        });
+        document.getElementById('p-selected-count').textContent = String(selectedTestIds.size);
+      }
+
+      async function loadPackages() {
+        try {
+          const res = await API.get('/packages?include_inactive=1&all=1');
+          allPackages = AdminCommon.unwrapList(res, ['packages', 'data', 'items']);
+          renderPackages();
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load packages', 'error');
+        }
+      }
+
+      function renderPackages() {
+        const q = document.getElementById('pkg-search').value.trim().toLowerCase();
+        const list = allPackages.filter(p => !q || (p.name || '').toLowerCase().includes(q));
+        const grid = document.getElementById('packages-grid');
+
+        if (!list.length) {
+          grid.innerHTML = `<div style="grid-column:1/-1">${AdminCommon.emptyStateHTML('package', 'No packages found', 'Create a bundled health package to offer discounted checkups.')}</div>`;
+          return;
+        }
+
+        grid.innerHTML = list.map(p => {
+          const tests = Array.isArray(p.tests) ? p.tests : [];
+          const discountPct = p.original_price > 0
+            ? Math.round(((p.original_price - p.offer_price) / p.original_price) * 100)
+            : (p.discount_percent || 0);
+          return `
+            <div class="glass-card-static" style="display:flex;flex-direction:column;justify-content:space-between;gap:var(--space-4)">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+                  <h3 style="font-size:var(--fs-lg);font-weight:700;color:var(--navy)">${UI.escapeHtml(p.name)}</h3>
+                  <span class="badge ${p.is_active ? 'badge-green' : 'badge-gray'}">${p.is_active ? 'Active' : 'Inactive'}</span>
+                </div>
+                <p style="font-size:var(--fs-sm);color:var(--muted);margin-bottom:12px">${UI.escapeHtml(p.description || '')}</p>
+                <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                  <span class="price">${UI.formatCurrency(p.offer_price)}</span>
+                  <span class="price-original">${UI.formatCurrency(p.original_price)}</span>
+                  ${discountPct > 0 ? `<span class="price-discount">${discountPct}% OFF</span>` : ''}
+                </div>
+                <div style="font-size:var(--fs-xs);color:var(--dark-text)">
+                  <strong>${tests.length || p.test_count || 0} Tests Included</strong>
+                  ${tests.length ? `<div style="color:var(--muted);margin-top:4px">${tests.slice(0, 4).map(t => UI.escapeHtml(t.name || t)).join(', ')}${tests.length > 4 ? ` +${tests.length - 4} more` : ''}</div>` : ''}
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid rgba(20,99,197,0.08)">
+                <button class="btn btn-secondary btn-sm edit-pkg-btn" data-id="${p.id}" style="flex:1">Edit</button>
+                <button class="btn btn-sm ${p.is_active ? 'btn-danger' : 'btn-success'} toggle-pkg-btn" data-id="${p.id}">
+                  ${p.is_active ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        grid.querySelectorAll('.edit-pkg-btn').forEach(btn => {
+          btn.addEventListener('click', () => openPkgModal(btn.dataset.id));
+        });
+        grid.querySelectorAll('.toggle-pkg-btn').forEach(btn => {
+          btn.addEventListener('click', () => togglePkgActive(btn.dataset.id, btn));
+        });
+      }
+
+      async function openPkgModal(id = null) {
+        document.getElementById('pkg-form').reset();
+        document.getElementById('p-id').value = id || '';
+        document.getElementById('pkg-modal-title').textContent = id ? 'Edit Package' : 'Create Package';
+        document.getElementById('p-test-filter').value = '';
+        selectedTestIds = new Set();
+
+        let pkg = null;
+        if (id) {
+          pkg = allPackages.find(x => String(x.id) === String(id));
+          try {
+            const detail = await API.get(`/packages/${id}`);
+            pkg = detail.package || detail || pkg;
+          } catch { /* fallback */ }
+        }
+
+        if (pkg) {
+          document.getElementById('p-name').value = pkg.name || '';
+          document.getElementById('p-desc').value = pkg.description || '';
+          document.getElementById('p-orig-price').value = pkg.original_price ?? '';
+          document.getElementById('p-offer-price').value = pkg.offer_price ?? '';
+          document.getElementById('p-home').checked = pkg.home_collection_available !== 0;
+          document.getElementById('p-active').checked = pkg.is_active !== 0;
+
+          const testIds = pkg.test_ids || (Array.isArray(pkg.tests) ? pkg.tests.map(t => t.id || t.test_id || t) : []);
+          testIds.forEach(tid => selectedTestIds.add(String(tid)));
+
+          const branchIds = pkg.branch_ids || (Array.isArray(pkg.branches) ? pkg.branches.map(b => b.id || b) : null);
+          document.querySelectorAll('input[name="p-branch"]').forEach(cb => {
+            cb.checked = branchIds ? branchIds.map(String).includes(String(cb.value)) : true;
+          });
+        } else {
+          document.getElementById('p-home').checked = true;
+          document.getElementById('p-active').checked = true;
+          document.querySelectorAll('input[name="p-branch"]').forEach(cb => { cb.checked = true; });
+        }
+
+        renderTestsMultiSelect('');
+        UI.openModal('pkg-modal');
+      }
+
+      function togglePkgActive(id, btn) {
+        const pkg = allPackages.find(x => String(x.id) === String(id));
+        if (!pkg) return;
+        const nextActive = pkg.is_active ? 0 : 1;
+        UI.confirm(`${nextActive ? 'Activate' : 'Deactivate'} package "${pkg.name}"?`, async () => {
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.put(`/admin/packages/${id}`, { ...pkg, is_active: nextActive });
+            UI.toast('Package status updated', 'success');
+            await loadPackages();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to update package', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        }, 'Update Package');
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'packages',
+          title: 'Packages Management',
+          subtitle: 'Create and manage bundled diagnostic health packages',
+        });
+
+        await loadMetadata();
+        await loadPackages();
+
+        document.getElementById('pkg-search').addEventListener('input', UI.debounce(renderPackages, 200));
+        document.getElementById('p-test-filter').addEventListener('input', (e) => renderTestsMultiSelect(e.target.value));
+        document.getElementById('add-pkg-btn').addEventListener('click', () => openPkgModal(null));
+
+        document.getElementById('pkg-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = document.getElementById('p-id').value;
+          const orig = Number(document.getElementById('p-orig-price').value);
+          const offer = Number(document.getElementById('p-offer-price').value);
+          const discount_percent = orig > 0 ? Math.round(((orig - offer) / orig) * 100) : 0;
+
+          const payload = {
+            name: document.getElementById('p-name').value.trim(),
+            description: document.getElementById('p-desc').value.trim(),
+            original_price: orig,
+            offer_price: offer,
+            discount_percent,
+            test_ids: Array.from(selectedTestIds).map(Number),
+            branch_ids: Array.from(document.querySelectorAll('input[name="p-branch"]:checked')).map(cb => Number(cb.value)),
+            home_collection_available: document.getElementById('p-home').checked ? 1 : 0,
+            is_active: document.getElementById('p-active').checked ? 1 : 0,
+          };
+
+          const btn = document.getElementById('p-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            if (id) {
+              await API.put(`/admin/packages/${id}`, payload);
+              UI.toast('Package updated', 'success');
+            } else {
+              await API.post('/admin/packages', payload);
+              UI.toast('Package created', 'success');
+            }
+            UI.closeModal('pkg-modal');
+            await loadPackages();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to save package', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Tests Catalogue — Ranchi Pathology</title>
+  <meta name="description" content="Explore and book 100+ diagnostic lab tests with home sample collection in Ranchi, Chandwa, and Lohardaga. Accurate reports, transparent pricing, NABL-guided standards.">
+  <meta name="keywords" content="blood test ranchi, pathology test lohardaga, lab test chandwa, CBC test, lipid profile, thyroid test, home sample collection">
+  <meta property="og:title" content="Diagnostic Tests Catalogue — Ranchi Pathology">
+  <meta property="og:description" content="Search affordable diagnostic tests, check fasting instructions, and book home collection with instant confirmation.">
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <style>
+    .page-content {
+      padding-top: 88px;
+      padding-bottom: var(--space-16);
+      min-height: calc(100vh - 350px);
+    }
+    .catalog-header {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-6);
+    }
+    .catalog-header h1 {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: var(--space-2);
+      letter-spacing: -0.02em;
+    }
+    .catalog-header p {
+      color: var(--muted);
+      font-size: var(--fs-base);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Filter & Search Bar */
+    .filter-panel {
+      margin-bottom: var(--space-8);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .search-row {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: min(100%, 240px);
+      position: relative;
+    }
+    .search-box .search-icon {
+      position: absolute;
+      left: var(--space-4);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
+    .search-box input {
+      padding-left: 2.75rem;
+      padding-right: 2.5rem;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.8);
+    }
+    .search-box .clear-btn {
+      position: absolute;
+      right: var(--space-3);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: var(--space-1);
+      cursor: pointer;
+      display: none;
+    }
+    .sort-box {
+      width: 220px;
+      flex-shrink: 0;
+    }
+    .sort-box select {
+      border-radius: var(--radius-full);
+      background-color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+      color: var(--dark-text);
+      cursor: pointer;
+    }
+
+    /* Category Chips */
+    .chips-wrapper {
+      position: relative;
+      overflow-x: auto;
+      padding-bottom: var(--space-2);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .chips-container {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      width: max-content;
+      min-width: 100%;
+    }
+    .chip {
+      user-select: none;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      padding: var(--space-2) var(--space-4);
+    }
+    .chip .chip-count {
+      font-size: 0.7rem;
+      opacity: 0.75;
+      margin-left: 4px;
+      padding: 1px 6px;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: var(--radius-full);
+    }
+    .chip.selected .chip-count {
+      background: rgba(20, 99, 197, 0.15);
+      color: var(--blue);
+    }
+
+    /* Results Header */
+    .results-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+      padding: 0 var(--space-1);
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+
+    /* Test Card */
+    .test-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      height: 100%;
+      transition: var(--transition);
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .test-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--glass-shadow-lg);
+      border-color: rgba(20, 99, 197, 0.25);
+    }
+    .test-card-top {
+      margin-bottom: var(--space-4);
+    }
+    .test-badge-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .test-code {
+      font-family: monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .test-title {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.35;
+      margin-bottom: var(--space-2);
+    }
+    .test-desc {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: var(--space-3);
+    }
+    .test-meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--dark-text);
+      background: rgba(20, 99, 197, 0.06);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+    }
+    .meta-pill svg {
+      width: 14px;
+      height: 14px;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+    .meta-pill.fasting {
+      background: rgba(245, 158, 11, 0.12);
+      color: #92400e;
+    }
+    .meta-pill.fasting svg {
+      color: var(--warning);
+    }
+
+    .test-card-bottom {
+      border-top: 1px solid rgba(20, 99, 197, 0.08);
+      padding-top: var(--space-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .price-block {
+      display: flex;
+      flex-direction: column;
+    }
+    .price-current {
+      font-size: var(--fs-xl);
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .price-strike-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-cart-toggle {
+      flex-shrink: 0;
+      min-width: 130px;
+    }
+    .btn-cart-toggle.in-cart {
+      background: rgba(16, 185, 129, 0.12);
+      color: #065f46;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .btn-cart-toggle.in-cart:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #991b1b;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Floating Cart Summary Bar */
+    .cart-summary-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 990;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(20, 99, 197, 0.15);
+      box-shadow: 0 -8px 32px rgba(20, 70, 130, 0.15);
+      padding: var(--space-3) 0;
+      transform: translateY(110%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cart-summary-bar.visible {
+      transform: translateY(0);
+    }
+    .cart-summary-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .cart-summary-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .cart-icon-badge {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cart-icon-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--danger);
+      color: var(--white);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      border: 2px solid var(--white);
+    }
+    .cart-summary-text h4 {
+      font-size: var(--fs-base);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .cart-summary-text p {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+    .cart-summary-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* Skeleton Loading Cards */
+    .skeleton-card {
+      height: 240px;
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .skeleton-line {
+      height: 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-2);
+    }
+
+    @media (max-width: 768px) {
+      .sort-box {
+        width: 100%;
+      }
+      .test-card {
+        padding: var(--space-4);
+      }
+      .cart-summary-inner {
+        flex-direction: row;
+        gap: var(--space-2);
+      }
+      .cart-summary-text p {
+        display: none;
+      }
+      .cart-summary-actions .btn {
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--fs-xs);
+        font-weight: 700;
+      }
+      .test-card-bottom {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+      }
+      .btn-cart-toggle {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="demo-banner-container"></div>
+  <div id="navbar"></div>
+
+  <main class="page-content">
+    <div class="container">
+
+      <!-- Header Section -->
+      <section class="catalog-header fade-in">
+        <span class="badge badge-blue" style="margin-bottom: var(--space-2);">
+          Pathology &amp; Diagnostics
+        </span>
+        <h1>Diagnostic Tests Catalogue</h1>
+        <p>Book authentic medical lab tests with fast report turnaround and doorstep sample collection across Ranchi, Chandwa, and Lohardaga.</p>
+      </section>
+
+      <!-- Search, Categories & Sort Controls -->
+      <section class="glass-card-static filter-panel fade-in">
+        <div class="search-row">
+          <div class="search-box">
+            <span class="search-icon" id="search-icon-slot"></span>
+            <input type="text" id="test-search-input" class="form-input" placeholder="Search by test name, code (e.g. CBC, HbA1c, LFT)..." autocomplete="off" aria-label="Search tests">
+            <button type="button" class="clear-btn" id="search-clear-btn" aria-label="Clear search">&times;</button>
+          </div>
+          <div class="sort-box">
+            <select id="test-sort-select" class="form-input" aria-label="Sort tests">
+              <option value="name_asc">Name: A to Z</option>
+              <option value="name_desc">Name: Z to A</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="popular">Most Popular</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Category Filter Chips -->
+        <div class="chips-wrapper" role="region" aria-label="Filter by Category">
+          <div class="chips-container" id="category-chips-container">
+            <button class="chip selected" data-category="all" type="button">
+              <span>All Tests</span>
+              <span class="chip-count" id="count-all">...</span>
+            </button>
+            <!-- Dynamic Category Chips injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Meta Info -->
+      <div class="results-meta" id="results-meta">
+        <span id="results-counter">Loading tests catalogue...</span>
+        <span id="filter-status-tag" style="display:none;" class="badge badge-gray"></span>
+      </div>
+
+      <!-- Test Cards Grid / Skeleton -->
+      <section id="tests-section" aria-live="polite">
+        <div class="grid grid-3" id="tests-grid">
+          <!-- Skeletons rendered by default -->
+          <div class="glass-card-static skeleton-card skeleton"></div>
+          <div class="glass-card-static skeleton-card skeleton"></div>
+          <div class="glass-card-static skeleton-card skeleton"></div>
+          <div class="glass-card-static skeleton-card skeleton"></div>
+          <div class="glass-card-static skeleton-card skeleton"></div>
+          <div class="glass-card-static skeleton-card skeleton"></div>
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="tests-empty-state" class="glass-card empty-state" style="display: none;">
+          <div id="empty-icon-slot"></div>
+          <h3 id="empty-title">No tests found</h3>
+          <p id="empty-desc">We couldn't find any tests matching your filters. Try checking your spelling or clear active filters.</p>
+          <button type="button" class="btn btn-primary" id="btn-reset-filters">
+            <span>Reset All Filters</span>
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Floating Cart Summary Bar -->
+  <aside class="cart-summary-bar" id="floating-cart-bar" aria-label="Booking Cart Summary">
+    <div class="container">
+      <div class="cart-summary-inner">
+        <div class="cart-summary-info">
+          <div class="cart-icon-badge" id="cart-bar-icon-slot">
+            <span class="cart-icon-count" id="cart-bar-count">0</span>
+          </div>
+          <div class="cart-summary-text">
+            <h4><span id="cart-bar-items-label">0 items</span> &bull; <span id="cart-bar-total" style="color:var(--navy);font-weight:800;">₹0</span></h4>
+            <p>Ready to select appointment time and branch / home collection</p>
+          </div>
+        </div>
+        <div class="cart-summary-actions">
+          <a href="/booking.html" class="btn btn-primary btn-md" id="cart-bar-checkout-btn">
+            <span>Proceed to Book</span>
+            <span id="cart-btn-arrow-slot"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="footer"></div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+
+  <script>
+    // Initialize Navbar & Footer
+    document.getElementById('navbar').innerHTML = Components.customerNavbar('tests');
+    document.getElementById('footer').innerHTML = Components.customerFooter();
+
+    // Rebind mobile menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.onclick = () => mobileMenu.classList.add('open');
+      if (mobileMenuClose) mobileMenuClose.onclick = () => mobileMenu.classList.remove('open');
+      mobileMenu.onclick = (e) => { if (e.target === mobileMenu) mobileMenu.classList.remove('open'); };
+    }
+
+    // Populate Icons from Components
+    document.getElementById('search-icon-slot').innerHTML = Components.icon('search');
+    document.getElementById('empty-icon-slot').innerHTML = Components.icon('flask');
+    document.getElementById('cart-bar-icon-slot').insertAdjacentHTML('afterbegin', Components.icon('flask'));
+    document.getElementById('cart-btn-arrow-slot').innerHTML = Components.icon('arrowRight');
+
+    // Demo Mode Detection
+    API.get('/settings/public').then(res => {
+      const env = res.environment || (res.settings && res.settings.environment);
+      if (env === 'demo') {
+        const b = document.getElementById('demo-banner-container');
+        if (b) b.innerHTML = '<div class="demo-banner">DEMO MODE — Sample data & simulated workflows active</div>';
+      }
+    }).catch(() => {});
+
+    // State Management
+    const state = {
+      allTests: [],
+      categories: [],
+      selectedCategory: 'all',
+      searchTerm: '',
+      sortBy: 'name_asc',
+      cart: []
+    };
+
+    // Cart Management
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('rp_cart');
+        const parsed = raw ? JSON.parse(raw) : [];
+        state.cart = Array.isArray(parsed) ? parsed.filter(i => i && i.id && i.type) : [];
+      } catch (_) {
+        state.cart = [];
+      }
+    }
+
+    function saveCart() {
+      localStorage.setItem('rp_cart', JSON.stringify(state.cart));
+      updateFloatingCart();
+    }
+
+    function isInCart(type, id) {
+      return state.cart.some(item => item.type === type && Number(item.id) === Number(id));
+    }
+
+    function toggleCartItem(test) {
+      const id = Number(test.id);
+      const idx = state.cart.findIndex(i => i.type === 'test' && Number(i.id) === id);
+      const effectivePrice = Number(test.discounted_price || test.price || 0);
+
+      if (idx >= 0) {
+        state.cart.splice(idx, 1);
+        saveCart();
+        UI.toast(`Removed "${test.name}" from your booking`, 'info');
+      } else {
+        state.cart.push({
+          type: 'test',
+          id: id,
+          name: test.name,
+          price: effectivePrice
+        });
+        saveCart();
+        UI.toast(`Added "${test.name}" to booking!`, 'success');
+      }
+      renderTests();
+    }
+
+    function updateFloatingCart() {
+      const bar = document.getElementById('floating-cart-bar');
+      const countEl = document.getElementById('cart-bar-count');
+      const itemsLabel = document.getElementById('cart-bar-items-label');
+      const totalEl = document.getElementById('cart-bar-total');
+
+      const totalItems = state.cart.length;
+      if (totalItems > 0) {
+        const totalPrice = state.cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        countEl.textContent = totalItems;
+        itemsLabel.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'} selected`;
+        totalEl.textContent = UI.formatCurrency(totalPrice);
+        bar.classList.add('visible');
+      } else {
+        bar.classList.remove('visible');
+      }
+    }
+
+    // Render Categories
+    function renderCategories() {
+      const container = document.getElementById('category-chips-container');
+      const countAll = document.getElementById('count-all');
+      if (countAll) countAll.textContent = state.allTests.length;
+
+      const chipsHtml = state.categories.map(cat => {
+        const isSel = state.selectedCategory === String(cat.id) || state.selectedCategory === cat.slug;
+        const testCount = cat.test_count ?? state.allTests.filter(t => Number(t.category_id) === Number(cat.id)).length;
+        return `
+          <button class="chip ${isSel ? 'selected' : ''}" data-category="${UI.escapeHtml(String(cat.id))}" type="button">
+            <span>${UI.escapeHtml(cat.name)}</span>
+            <span class="chip-count">${testCount}</span>
+          </button>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <button class="chip ${state.selectedCategory === 'all' ? 'selected' : ''}" data-category="all" type="button">
+          <span>All Tests</span>
+          <span class="chip-count">${state.allTests.length}</span>
+        </button>
+        ${chipsHtml}
+      `;
+
+      container.querySelectorAll('.chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+          btn.classList.add('selected');
+          state.selectedCategory = btn.dataset.category;
+          renderTests();
+        });
+      });
+    }
+
+    // Filter & Sort Tests
+    function getFilteredAndSortedTests() {
+      let list = [...state.allTests];
+
+      // Category filter
+      if (state.selectedCategory !== 'all') {
+        const catId = Number(state.selectedCategory);
+        list = list.filter(t => {
+          if (!isNaN(catId)) {
+            return Number(t.category_id) === catId;
+          }
+          return t.category_slug === state.selectedCategory;
+        });
+      }
+
+      // Search filter
+      const q = state.searchTerm.trim().toLowerCase();
+      if (q) {
+        list = list.filter(t => {
+          const name = (t.name || '').toLowerCase();
+          const code = (t.test_code || '').toLowerCase();
+          const desc = (t.description || '').toLowerCase();
+          const cat = (t.category_name || '').toLowerCase();
+          return name.includes(q) || code.includes(q) || desc.includes(q) || cat.includes(q);
+        });
+      }
+
+      // Sort
+      list.sort((a, b) => {
+        const priceA = Number(a.discounted_price || a.price || 0);
+        const priceB = Number(b.discounted_price || b.price || 0);
+
+        switch (state.sortBy) {
+          case 'name_desc':
+            return (b.name || '').localeCompare(a.name || '');
+          case 'price_asc':
+            return priceA - priceB;
+          case 'price_desc':
+            return priceB - priceA;
+          case 'popular':
+            return (b.discounted_price ? 1 : 0) - (a.discounted_price ? 1 : 0) || (a.name || '').localeCompare(b.name || '');
+          case 'name_asc':
+          default:
+            return (a.name || '').localeCompare(b.name || '');
+        }
+      });
+
+      return list;
+    }
+
+    // Render Tests Grid
+    function renderTests() {
+      const grid = document.getElementById('tests-grid');
+      const emptyState = document.getElementById('tests-empty-state');
+      const counterEl = document.getElementById('results-counter');
+      const filtered = getFilteredAndSortedTests();
+
+      // Update counter
+      counterEl.textContent = `Showing ${filtered.length} of ${state.allTests.length} tests`;
+
+      if (filtered.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = filtered.map(test => {
+        const inCart = isInCart('test', test.id);
+        const hasDiscount = test.discounted_price && Number(test.discounted_price) < Number(test.price);
+        const currentPrice = hasDiscount ? test.discounted_price : test.price;
+        const discountPct = hasDiscount ? Math.round(((test.price - test.discounted_price) / test.price) * 100) : 0;
+
+        // Fasting badge
+        const fastingRequired = Number(test.fasting_required) === 1 || test.fasting_required === true;
+        const fastingHours = test.fasting_hours ? `${test.fasting_hours} hrs fasting` : 'Fasting required';
+
+        // Sample type
+        const sampleType = test.sample_type || 'Blood';
+
+        // Report turnaround time
+        const reportTime = test.report_time || (test.report_time_hours ? `${test.report_time_hours} hours` : '24 hours');
+
+        return `
+          <article class="glass-card test-card fade-in" data-id="${test.id}">
+            <div class="test-card-top">
+              <div class="test-badge-row">
+                <span class="badge badge-gray test-code">${UI.escapeHtml(test.test_code || 'LAB')}</span>
+                ${test.category_name ? `<span class="badge badge-blue">${UI.escapeHtml(test.category_name)}</span>` : ''}
+              </div>
+
+              <h2 class="test-title">${UI.escapeHtml(test.name)}</h2>
+
+              ${test.description ? `<p class="test-desc">${UI.escapeHtml(test.description)}</p>` : ''}
+
+              <div class="test-meta-pills">
+                <span class="meta-pill" title="Sample type required">
+                  ${Components.icon('droplet')}
+                  <span>${UI.escapeHtml(sampleType)}</span>
+                </span>
+                <span class="meta-pill" title="Turnaround time for lab report">
+                  ${Components.icon('clock')}
+                  <span>Report in ${UI.escapeHtml(reportTime)}</span>
+                </span>
+                ${fastingRequired ? `
+                  <span class="meta-pill fasting" title="Special fasting preparation required">
+                    ${Components.icon('clock')}
+                    <span>${UI.escapeHtml(fastingHours)}</span>
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="test-card-bottom">
+              <div class="price-block">
+                <span class="price-current">${UI.formatCurrency(currentPrice)}</span>
+                ${hasDiscount ? `
+                  <div class="price-strike-wrap">
+                    <span class="price-original">${UI.formatCurrency(test.price)}</span>
+                    <span class="price-discount">${discountPct}% OFF</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <button type="button" class="btn btn-sm ${inCart ? 'btn-secondary in-cart' : 'btn-primary'} btn-cart-toggle" data-test-id="${test.id}">
+                ${inCart ? `${Components.icon('check')} <span>In Cart</span>` : `${Components.icon('plus')} <span>Add to Booking</span>`}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Attach Cart Toggle listeners
+      grid.querySelectorAll('.btn-cart-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const testId = Number(btn.dataset.testId);
+          const testObj = state.allTests.find(t => Number(t.id) === testId);
+          if (testObj) toggleCartItem(testObj);
+        });
+      });
+    }
+
+    // Search and Sort Event Listeners
+    const searchInput = document.getElementById('test-search-input');
+    const clearBtn = document.getElementById('search-clear-btn');
+    const sortSelect = document.getElementById('test-sort-select');
+
+    searchInput.addEventListener('input', UI.debounce((e) => {
+      state.searchTerm = e.target.value;
+      clearBtn.style.display = state.searchTerm.length > 0 ? 'block' : 'none';
+      renderTests();
+    }, 250));
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      state.searchTerm = '';
+      clearBtn.style.display = 'none';
+      searchInput.focus();
+      renderTests();
+    });
+
+    sortSelect.addEventListener('change', (e) => {
+      state.sortBy = e.target.value;
+      renderTests();
+    });
+
+    document.getElementById('btn-reset-filters').addEventListener('click', () => {
+      state.selectedCategory = 'all';
+      state.searchTerm = '';
+      state.sortBy = 'name_asc';
+      searchInput.value = '';
+      clearBtn.style.display = 'none';
+      sortSelect.value = 'name_asc';
+      renderCategories();
+      renderTests();
+    });
+
+    // Initial Fetch & Boot
+    async function init() {
+      loadCart();
+      updateFloatingCart();
+
+      try {
+        const [catRes, testRes] = await Promise.allSettled([
+          API.get('/categories'),
+          API.get('/tests')
+        ]);
+
+        if (catRes.status === 'fulfilled') {
+          const rawCats = catRes.value;
+          state.categories = Array.isArray(rawCats) ? rawCats : (rawCats.categories || []);
+        }
+
+        if (testRes.status === 'fulfilled') {
+          const rawTests = testRes.value;
+          state.allTests = Array.isArray(rawTests) ? rawTests : (rawTests.tests || []);
+        } else {
+          throw new Error('Failed to load tests');
+        }
+
+        renderCategories();
+        renderTests();
+
+      } catch (err) {
+        const grid = document.getElementById('tests-grid');
+        grid.style.display = 'none';
+        const emptyState = document.getElementById('tests-empty-state');
+        emptyState.style.display = 'block';
+        document.getElementById('empty-title').textContent = 'Unable to Load Tests';
+        document.getElementById('empty-desc').textContent = 'A network issue occurred while loading the test catalogue. Please check your connection and try again.';
+        document.getElementById('btn-reset-filters').textContent = 'Retry Loading';
+        document.getElementById('btn-reset-filters').onclick = () => location.reload();
+        UI.toast('Failed to load test catalogue', 'error');
+      }
+    }
+
+    // Run on script execution
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Branches Management — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="grid grid-3" id="branches-grid">
+          <div class="glass-card-static"><div class="skeleton" style="height:220px"></div></div>
+          <div class="glass-card-static"><div class="skeleton" style="height:220px"></div></div>
+          <div class="glass-card-static"><div class="skeleton" style="height:220px"></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Edit Branch Modal -->
+  <div class="modal-overlay" id="branch-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="branch-modal-title">Edit Branch</h3>
+        <button class="modal-close" data-close-modal="branch-modal">&times;</button>
+      </div>
+      <form id="branch-form">
+        <div class="modal-body">
+          <input type="hidden" id="b-id">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="b-name">Branch Name</label>
+              <input type="text" id="b-name" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="b-phone">Phone *</label>
+              <input type="text" id="b-phone" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="b-email">Email</label>
+              <input type="email" id="b-email" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="b-weekly-off">Weekly Off</label>
+              <input type="text" id="b-weekly-off" class="form-input" placeholder="e.g. Sunday or None">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="b-address">Address *</label>
+            <textarea id="b-address" class="form-input" required></textarea>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="b-city">City</label>
+              <input type="text" id="b-city" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="b-pincode">Pincode</label>
+              <input type="text" id="b-pincode" class="form-input" maxlength="6">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="b-map">Map Link</label>
+              <input type="url" id="b-map" class="form-input" placeholder="https://maps.google.com/...">
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="b-open">Opening Time</label>
+              <input type="time" id="b-open" class="form-input" value="08:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="b-close">Closing Time</label>
+              <input type="time" id="b-close" class="form-input" value="20:00">
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="b-hc-type">Home Collection Charge Type</label>
+              <select id="b-hc-type" class="form-input">
+                <option value="free">Free</option>
+                <option value="flat">Flat Charge (₹)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="b-hc-amount">Home Collection Amount (₹)</label>
+              <input type="number" id="b-hc-amount" class="form-input" min="0" value="0">
+            </div>
+          </div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <label class="switch-label">
+              <input type="checkbox" id="b-hc-avail" class="switch-input" checked>
+              <span>Home Collection Available</span>
+            </label>
+            <label class="switch-label">
+              <input type="checkbox" id="b-active" class="switch-input" checked>
+              <span>Branch Active</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="branch-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="b-submit-btn">Save Branch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Manage Slots Modal -->
+  <div class="modal-overlay" id="slots-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="slots-modal-title">Manage Appointment Slots</h3>
+        <button class="modal-close" data-close-modal="slots-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="s-branch-id">
+        <form id="slot-form" class="detail-section">
+          <div class="detail-section-title">Create New Slot</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="s-date">Date *</label>
+              <input type="date" id="s-date" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="s-type">Slot Type *</label>
+              <select id="s-type" class="form-input">
+                <option value="branch_visit">Branch Visit</option>
+                <option value="home_collection">Home Collection</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="s-start">Start Time *</label>
+              <input type="time" id="s-start" class="form-input" value="08:00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="s-end">End Time *</label>
+              <input type="time" id="s-end" class="form-input" value="09:00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="s-cap">Max Capacity *</label>
+              <input type="number" id="s-cap" class="form-input" min="1" value="5" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm" id="s-submit-btn">Add Slot</button>
+        </form>
+
+        <div class="detail-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="detail-section-title" style="margin:0">Existing Slots for Date</div>
+            <button type="button" class="btn btn-secondary btn-sm" id="s-refresh-btn">Refresh</button>
+          </div>
+          <div id="slots-list-box" style="font-size:var(--fs-sm);color:var(--muted)">Select a date to view slots</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Holidays Modal -->
+  <div class="modal-overlay" id="holidays-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="holidays-modal-title">Branch Holidays</h3>
+        <button class="modal-close" data-close-modal="holidays-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="h-branch-id">
+        <form id="holiday-form" class="detail-section">
+          <div class="detail-section-title">Add Holiday</div>
+          <div class="form-group">
+            <label class="form-label" for="h-date">Holiday Date *</label>
+            <input type="date" id="h-date" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="h-reason">Reason</label>
+            <input type="text" id="h-reason" class="form-input" placeholder="e.g. Republic Day / Maintenance">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm" id="h-submit-btn">Add Holiday</button>
+        </form>
+        <div class="detail-section">
+          <div class="detail-section-title">Scheduled Holidays</div>
+          <div id="holidays-list-box"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let branches = [];
+
+      async function loadBranches() {
+        try {
+          const res = await API.get('/branches?include_inactive=1&all=1');
+          branches = AdminCommon.unwrapList(res, ['branches', 'data', 'items']);
+          renderBranches();
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load branches', 'error');
+        }
+      }
+
+      function renderBranches() {
+        const grid = document.getElementById('branches-grid');
+        if (!branches.length) {
+          grid.innerHTML = `<div style="grid-column:1/-1">${AdminCommon.emptyStateHTML('building', 'No branches found', 'Branches will appear here once configured.')}</div>`;
+          return;
+        }
+
+        grid.innerHTML = branches.map(b => `
+          <div class="glass-card-static" style="display:flex;flex-direction:column;justify-content:space-between;gap:var(--space-4)">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="metric-icon blue">${Components.icon('building')}</div>
+                  <div>
+                    <h3 style="font-size:var(--fs-lg);font-weight:700;color:var(--navy)">${UI.escapeHtml(b.name)}</h3>
+                    <span style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(b.city || b.name)}, ${UI.escapeHtml(b.state || 'Jharkhand')}</span>
+                  </div>
+                </div>
+                <span class="badge ${b.is_active ? 'badge-green' : 'badge-gray'}">${b.is_active ? 'Active' : 'Inactive'}</span>
+              </div>
+
+              <div style="font-size:var(--fs-sm);display:flex;flex-direction:column;gap:8px;margin-top:12px">
+                <div style="display:flex;gap:8px;align-items:flex-start">
+                  <span style="color:var(--blue);flex-shrink:0">${Components.icon('mapPin')}</span>
+                  <span>${UI.escapeHtml(b.address || 'Address not configured')} ${b.pincode ? `- ${UI.escapeHtml(b.pincode)}` : ''}</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span style="color:var(--blue);flex-shrink:0">${Components.icon('phone')}</span>
+                  <span>${UI.escapeHtml(b.phone || 'Not configured')}</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span style="color:var(--blue);flex-shrink:0">${Components.icon('clock')}</span>
+                  <span>${UI.escapeHtml(b.opening_time || '08:00')} – ${UI.escapeHtml(b.closing_time || '20:00')} ${b.weekly_off ? `(Off: ${UI.escapeHtml(b.weekly_off)})` : ''}</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span style="color:var(--blue);flex-shrink:0">${Components.icon('truck')}</span>
+                  <span>Home Collection: ${b.home_collection_available ? (b.home_collection_charge_type === 'free' ? 'Free' : UI.formatCurrency(b.home_collection_charge_amount || 0)) : 'Disabled'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid rgba(20,99,197,0.08)">
+              <button class="btn btn-primary btn-sm edit-branch-btn" data-id="${b.id}" style="flex:1">Edit Details</button>
+              <button class="btn btn-secondary btn-sm manage-slots-btn" data-id="${b.id}">Slots</button>
+              <button class="btn btn-secondary btn-sm manage-holidays-btn" data-id="${b.id}">Holidays</button>
+            </div>
+          </div>
+        `).join('');
+
+        grid.querySelectorAll('.edit-branch-btn').forEach(btn => btn.addEventListener('click', () => openBranchModal(btn.dataset.id)));
+        grid.querySelectorAll('.manage-slots-btn').forEach(btn => btn.addEventListener('click', () => openSlotsModal(btn.dataset.id)));
+        grid.querySelectorAll('.manage-holidays-btn').forEach(btn => btn.addEventListener('click', () => openHolidaysModal(btn.dataset.id)));
+      }
+
+      function openBranchModal(id) {
+        const b = branches.find(x => String(x.id) === String(id));
+        if (!b) return;
+        document.getElementById('branch-modal-title').textContent = `Edit ${b.name} Branch`;
+        document.getElementById('b-id').value = b.id;
+        document.getElementById('b-name').value = b.name || '';
+        document.getElementById('b-phone').value = b.phone || '';
+        document.getElementById('b-email').value = b.email || '';
+        document.getElementById('b-weekly-off').value = b.weekly_off || '';
+        document.getElementById('b-address').value = b.address || '';
+        document.getElementById('b-city').value = b.city || '';
+        document.getElementById('b-pincode').value = b.pincode || '';
+        document.getElementById('b-map').value = b.map_link || '';
+        document.getElementById('b-open').value = b.opening_time || '08:00';
+        document.getElementById('b-close').value = b.closing_time || '20:00';
+        document.getElementById('b-hc-type').value = b.home_collection_charge_type || 'free';
+        document.getElementById('b-hc-amount').value = b.home_collection_charge_amount ?? 0;
+        document.getElementById('b-hc-avail').checked = b.home_collection_available !== 0;
+        document.getElementById('b-active').checked = b.is_active !== 0;
+        UI.openModal('branch-modal');
+      }
+
+      async function openSlotsModal(branchId) {
+        const b = branches.find(x => String(x.id) === String(branchId));
+        document.getElementById('slots-modal-title').textContent = `Slots — ${b ? b.name : 'Branch'}`;
+        document.getElementById('s-branch-id').value = branchId;
+        const today = new Date().toISOString().slice(0, 10);
+        document.getElementById('s-date').value = today;
+        UI.openModal('slots-modal');
+        await loadSlotsForDate();
+      }
+
+      async function loadSlotsForDate() {
+        const branchId = document.getElementById('s-branch-id').value;
+        const date = document.getElementById('s-date').value;
+        const box = document.getElementById('slots-list-box');
+        if (!branchId || !date) return;
+
+        box.innerHTML = '<div class="spinner"></div>';
+        try {
+          const res = await API.get(`/branches/${branchId}/slots?date=${encodeURIComponent(date)}`);
+          const slots = AdminCommon.unwrapList(res, ['slots', 'data', 'items']);
+          if (!slots.length) {
+            box.innerHTML = '<p style="color:var(--muted)">No slots created for this date yet.</p>';
+            return;
+          }
+          box.innerHTML = slots.map(s => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06)">
+              <div>
+                <strong>${UI.escapeHtml(s.start_time)} – ${UI.escapeHtml(s.end_time)}</strong>
+                <span class="badge badge-blue" style="margin-left:6px">${UI.escapeHtml((s.slot_type || 'branch_visit').replace(/_/g, ' '))}</span>
+              </div>
+              <span style="font-size:var(--fs-xs);color:var(--dark-text)">
+                Booked: <strong>${s.booked_count || 0} / ${s.max_capacity || 0}</strong>
+              </span>
+            </div>
+          `).join('');
+        } catch (err) {
+          box.innerHTML = `<p style="color:var(--danger)">${UI.escapeHtml(err.message || 'Failed to load slots')}</p>`;
+        }
+      }
+
+      async function openHolidaysModal(branchId) {
+        const b = branches.find(x => String(x.id) === String(branchId));
+        document.getElementById('holidays-modal-title').textContent = `Holidays — ${b ? b.name : 'Branch'}`;
+        document.getElementById('h-branch-id').value = branchId;
+        document.getElementById('h-date').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('h-reason').value = '';
+        UI.openModal('holidays-modal');
+        await loadHolidays(branchId);
+      }
+
+      async function loadHolidays(branchId) {
+        const box = document.getElementById('holidays-list-box');
+        box.innerHTML = '<div class="spinner"></div>';
+        try {
+          const res = await API.get(`/branches/${branchId}`);
+          const holidays = AdminCommon.unwrapList(res.holidays || res.branch?.holidays, ['holidays', 'data']);
+          if (!holidays.length) {
+            box.innerHTML = '<p style="font-size:var(--fs-sm);color:var(--muted)">No holidays configured for this branch.</p>';
+            return;
+          }
+          box.innerHTML = holidays.map(h => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,99,197,0.06);font-size:var(--fs-sm)">
+              <div>
+                <strong>${UI.formatDate(h.holiday_date)}</strong>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(h.reason || 'Holiday')}</div>
+              </div>
+              <button class="icon-btn danger del-holiday-btn" data-id="${h.id}" title="Remove">${Components.icon('trash')}</button>
+            </div>
+          `).join('');
+
+          box.querySelectorAll('.del-holiday-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              UI.confirm('Remove this holiday?', async () => {
+                try {
+                  await API.del(`/admin/branches/${branchId}/holidays/${btn.dataset.id}`);
+                  UI.toast('Holiday removed', 'success');
+                  loadHolidays(branchId);
+                } catch (err) {
+                  UI.toast(err.message || 'Could not remove holiday', 'error');
+                }
+              }, 'Remove Holiday');
+            });
+          });
+        } catch (err) {
+          box.innerHTML = `<p style="color:var(--danger);font-size:var(--fs-sm)">${UI.escapeHtml(err.message || 'Failed to load holidays')}</p>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'branches',
+          title: 'Branches Management',
+          subtitle: 'Manage Chandwa, Lohardaga & Ranchi locations, slots, and holidays',
+        });
+
+        await loadBranches();
+
+        document.getElementById('s-date').addEventListener('change', loadSlotsForDate);
+        document.getElementById('s-refresh-btn').addEventListener('click', loadSlotsForDate);
+
+        document.getElementById('branch-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = document.getElementById('b-id').value;
+          const btn = document.getElementById('b-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.put(`/admin/branches/${id}`, {
+              name: document.getElementById('b-name').value.trim(),
+              phone: document.getElementById('b-phone').value.trim(),
+              email: document.getElementById('b-email').value.trim(),
+              weekly_off: document.getElementById('b-weekly-off').value.trim(),
+              address: document.getElementById('b-address').value.trim(),
+              city: document.getElementById('b-city').value.trim(),
+              pincode: document.getElementById('b-pincode').value.trim(),
+              map_link: document.getElementById('b-map').value.trim(),
+              opening_time: document.getElementById('b-open').value,
+              closing_time: document.getElementById('b-close').value,
+              home_collection_charge_type: document.getElementById('b-hc-type').value,
+              home_collection_charge_amount: Number(document.getElementById('b-hc-amount').value || 0),
+              home_collection_available: document.getElementById('b-hc-avail').checked ? 1 : 0,
+              is_active: document.getElementById('b-active').checked ? 1 : 0,
+            });
+            UI.toast('Branch updated', 'success');
+            UI.closeModal('branch-modal');
+            await loadBranches();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to update branch', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        document.getElementById('slot-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const branchId = document.getElementById('s-branch-id').value;
+          const btn = document.getElementById('s-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.post(`/admin/branches/${branchId}/slots`, {
+              slot_date: document.getElementById('s-date').value,
+              slot_type: document.getElementById('s-type').value,
+              start_time: document.getElementById('s-start').value,
+              end_time: document.getElementById('s-end').value,
+              max_capacity: Number(document.getElementById('s-cap').value),
+            });
+            UI.toast('Slot created', 'success');
+            await loadSlotsForDate();
+          } catch (err) {
+            UI.toast(err.message || 'Failed to create slot', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+
+        document.getElementById('holiday-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const branchId = document.getElementById('h-branch-id').value;
+          const btn = document.getElementById('h-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.post(`/admin/branches/${branchId}/holidays`, {
+              holiday_date: document.getElementById('h-date').value,
+              reason: document.getElementById('h-reason').value.trim(),
+            });
+            UI.toast('Holiday added', 'success');
+            document.getElementById('h-reason').value = '';
+            await loadHolidays(branchId);
+          } catch (err) {
+            UI.toast(err.message || 'Failed to add holiday', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

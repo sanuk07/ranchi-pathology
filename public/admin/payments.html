@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments — Ranchi Pathology Admin</title>
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar"></aside>
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+    <div class="admin-main">
+      <header class="admin-header" id="admin-header"></header>
+      <main class="admin-content">
+        <div class="admin-filter-card fade-in">
+          <div class="filter-row">
+            <div class="filter-field" style="flex:2;min-width:200px">
+              <label for="pay-search">Search</label>
+              <input type="text" id="pay-search" class="form-input" placeholder="Payment ref, booking ID, UTR, or patient...">
+            </div>
+            <div class="filter-field">
+              <label for="pay-status">Status</label>
+              <select id="pay-status" class="form-input">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="failed">Failed</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="pay-refresh-btn">Refresh</button>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <h2 class="admin-table-title">UPI Payment Records <span id="pay-count" class="badge badge-blue" style="margin-left:8px">0</span></h2>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Payment Ref</th>
+                  <th>Booking &amp; Patient</th>
+                  <th>Amount</th>
+                  <th>UTR Number</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pay-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">Loading payments...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mobile-cards-list" id="pay-cards"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- QR Details Modal -->
+  <div class="modal-overlay" id="qr-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">UPI Payment QR Details</h3>
+        <button class="modal-close" data-close-modal="qr-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="qr-modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="qr-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verify Payment Modal -->
+  <div class="modal-overlay" id="verify-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Verify Payment</h3>
+        <button class="modal-close" data-close-modal="verify-modal">&times;</button>
+      </div>
+      <form id="verify-form">
+        <div class="modal-body">
+          <input type="hidden" id="v-payment-id">
+          <div class="form-group">
+            <label class="form-label" for="v-utr">UTR / Transaction Number *</label>
+            <input type="text" id="v-utr" class="form-input" placeholder="12-digit UPI UTR number" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="v-date">Transaction Date</label>
+            <input type="datetime-local" id="v-date" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="v-notes">Verification Notes</label>
+            <textarea id="v-notes" class="form-input" placeholder="Confirmed in bank / UPI app..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="verify-modal">Cancel</button>
+          <button type="submit" class="btn btn-success" id="v-submit-btn">Mark Verified</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin/admin-common.js"></script>
+  <script>
+    (() => {
+      let payments = [];
+
+      async function loadPayments() {
+        const status = document.getElementById('pay-status').value;
+        const params = new URLSearchParams();
+        if (status) params.set('status', status);
+        try {
+          const res = await API.get(`/admin/payments?${params.toString()}`);
+          payments = AdminCommon.unwrapList(res, ['payments', 'data', 'items']);
+          renderPayments();
+        } catch (err) {
+          UI.toast(err.message || 'Failed to load payments', 'error');
+        }
+      }
+
+      function renderPayments() {
+        const q = document.getElementById('pay-search').value.trim().toLowerCase();
+        const st = document.getElementById('pay-status').value;
+        const list = payments.filter(p => {
+          if (st && p.payment_status !== st) return false;
+          if (!q) return true;
+          return (p.payment_ref || '').toLowerCase().includes(q)
+            || (p.booking_code || p.booking_number || String(p.booking_id) || '').toLowerCase().includes(q)
+            || (p.utr_number || '').toLowerCase().includes(q)
+            || (p.patient_name || '').toLowerCase().includes(q);
+        });
+
+        document.getElementById('pay-count').textContent = String(list.length);
+        const tbody = document.getElementById('pay-tbody');
+        const cards = document.getElementById('pay-cards');
+
+        if (!list.length) {
+          const empty = AdminCommon.emptyStateHTML('qrCode', 'No payment records', 'Payments appear when UPI QR codes are generated for bookings.');
+          tbody.innerHTML = `<tr><td colspan="7">${empty}</td></tr>`;
+          cards.innerHTML = empty;
+          return;
+        }
+
+        tbody.innerHTML = list.map(p => `
+          <tr>
+            <td><strong>${UI.escapeHtml(p.payment_ref || String(p.id))}</strong></td>
+            <td>
+              <a href="/admin/bookings.html?id=${encodeURIComponent(p.booking_id)}" style="font-weight:600">
+                ${UI.escapeHtml(p.booking_code || p.booking_number || `#${p.booking_id}`)}
+              </a>
+              <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(p.patient_name || '')}</div>
+            </td>
+            <td><strong>${UI.formatCurrency(p.amount || 0)}</strong></td>
+            <td>${UI.escapeHtml(p.utr_number || '—')}</td>
+            <td>${AdminCommon.paymentBadge(p.payment_status)}</td>
+            <td>${UI.formatDateTime(p.created_at)}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-secondary btn-sm view-qr-btn" data-id="${p.id}" data-booking="${p.booking_id}">QR</button>
+                ${p.payment_status !== 'verified' ? `<button class="btn btn-success btn-sm verify-btn" data-id="${p.id}">Verify</button>` : ''}
+                <button class="btn btn-secondary btn-sm regen-qr-btn" data-booking="${p.booking_id}" title="Regenerate QR">Regen</button>
+                <button class="btn btn-secondary btn-sm resend-wa-btn" data-booking="${p.booking_id}" title="Resend on WhatsApp">Send WA</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        cards.innerHTML = list.map(p => `
+          <div class="data-card">
+            <div class="data-card-header">
+              <div>
+                <div class="data-card-title">${UI.escapeHtml(p.payment_ref || String(p.id))}</div>
+                <div style="font-size:var(--fs-xs);color:var(--muted)">${UI.escapeHtml(p.booking_code || `#${p.booking_id}`)} · ${UI.escapeHtml(p.patient_name || '')}</div>
+              </div>
+              ${AdminCommon.paymentBadge(p.payment_status)}
+            </div>
+            <div class="data-card-meta">
+              <div>Amount<strong>${UI.formatCurrency(p.amount || 0)}</strong></div>
+              <div>UTR<strong>${UI.escapeHtml(p.utr_number || '—')}</strong></div>
+            </div>
+            <div class="data-card-actions">
+              <button class="btn btn-secondary btn-sm view-qr-btn" data-id="${p.id}" data-booking="${p.booking_id}">QR Details</button>
+              ${p.payment_status !== 'verified' ? `<button class="btn btn-success btn-sm verify-btn" data-id="${p.id}">Verify</button>` : ''}
+              <button class="btn btn-secondary btn-sm regen-qr-btn" data-booking="${p.booking_id}">Regen QR</button>
+              <button class="btn btn-secondary btn-sm resend-wa-btn" data-booking="${p.booking_id}">Resend WA</button>
+            </div>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.view-qr-btn').forEach(btn => {
+          btn.addEventListener('click', () => viewQRDetails(btn.dataset.id, btn.dataset.booking));
+        });
+        document.querySelectorAll('.verify-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.getElementById('verify-form').reset();
+            document.getElementById('v-payment-id').value = btn.dataset.id;
+            UI.openModal('verify-modal');
+          });
+        });
+        document.querySelectorAll('.regen-qr-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/payments/${btn.dataset.booking}/generate-qr`, {});
+              UI.toast('New UPI QR generated', 'success');
+              await loadPayments();
+            } catch (err) {
+              UI.toast(err.message || 'Failed to regenerate QR', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+        });
+        document.querySelectorAll('.resend-wa-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            UI.setButtonLoading(btn, true);
+            try {
+              await API.post(`/admin/whatsapp/send-qr/${btn.dataset.booking}`, {});
+              UI.toast('Payment QR sent via WhatsApp', 'success');
+            } catch (err) {
+              UI.toast(err.message || 'Failed to send WhatsApp message', 'error');
+            } finally {
+              UI.setButtonLoading(btn, false);
+            }
+          });
+        });
+      }
+
+      async function viewQRDetails(paymentId, bookingId) {
+        const body = document.getElementById('qr-modal-body');
+        body.innerHTML = '<div class="spinner"></div>';
+        UI.openModal('qr-modal');
+        try {
+          const data = await API.get(`/admin/payments/${bookingId}`);
+          const p = data.payment || payments.find(x => String(x.id) === String(paymentId)) || data;
+          const qrUrl = data.qr_data_url || data.qrCodeUrl || p.qr_data_url;
+          body.innerHTML = `
+            ${qrUrl ? `<div class="qr-preview-box" style="margin-bottom:16px"><img src="${qrUrl}" alt="UPI QR"></div>` : ''}
+            <div class="detail-kv-grid">
+              <div><div class="detail-kv-label">Payment Ref</div><div class="detail-kv-val">${UI.escapeHtml(p.payment_ref || '—')}</div></div>
+              <div><div class="detail-kv-label">Amount</div><div class="detail-kv-val">${UI.formatCurrency(p.amount || 0)}</div></div>
+              <div><div class="detail-kv-label">UPI ID</div><div class="detail-kv-val">${UI.escapeHtml(p.upi_id || '—')}</div></div>
+              <div><div class="detail-kv-label">Payee Name</div><div class="detail-kv-val">${UI.escapeHtml(p.payee_name || '—')}</div></div>
+              <div><div class="detail-kv-label">QR Status</div><div class="detail-kv-val">${UI.escapeHtml(p.qr_status || 'active')}</div></div>
+              <div><div class="detail-kv-label">Payment Status</div><div>${AdminCommon.paymentBadge(p.payment_status)}</div></div>
+              <div style="grid-column:1/-1"><div class="detail-kv-label">UPI Payment URI</div><div class="detail-kv-val" style="font-size:var(--fs-xs)">${UI.escapeHtml(p.payment_uri || '—')}</div></div>
+            </div>
+          `;
+        } catch (err) {
+          body.innerHTML = `<p style="color:var(--danger)">${UI.escapeHtml(err.message || 'Failed to load QR details')}</p>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await AdminCommon.init({
+          page: 'payments',
+          title: 'Payments Management',
+          subtitle: 'Verify UTR references, view UPI QR codes, and resend payment links',
+        });
+
+        await loadPayments();
+
+        document.getElementById('pay-search').addEventListener('input', UI.debounce(renderPayments, 200));
+        document.getElementById('pay-status').addEventListener('change', loadPayments);
+        document.getElementById('pay-refresh-btn').addEventListener('click', loadPayments);
+
+        document.getElementById('verify-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = document.getElementById('v-payment-id').value;
+          const btn = document.getElementById('v-submit-btn');
+          UI.setButtonLoading(btn, true);
+          try {
+            await API.post(`/admin/payments/${id}/verify`, {
+              utr_number: document.getElementById('v-utr').value.trim(),
+              transaction_date: document.getElementById('v-date').value || undefined,
+              admin_notes: document.getElementById('v-notes').value.trim(),
+            });
+            UI.toast('Payment verified', 'success');
+            UI.closeModal('verify-modal');
+            await loadPayments();
+          } catch (err) {
+            UI.toast(err.message || 'Verification failed', 'error');
+          } finally {
+            UI.setButtonLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
