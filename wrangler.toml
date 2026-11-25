@@ -13,7 +13,7 @@ DEFAULT_UPI_PAYEE = "sanu"
 [[d1_databases]]
 binding = "DB"
 database_name = "ranchi-pathology-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "1605ccbe-ea56-4ec4-9963-74e7a70ba2e8"
 
 [[r2_buckets]]
 binding = "REPORTS_BUCKET"
