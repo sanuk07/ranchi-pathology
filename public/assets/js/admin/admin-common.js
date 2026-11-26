@@ -7,6 +7,62 @@ const AdminCommon = (() => {
   let currentAdmin = null;
   let pollTimer = null;
   let notifications = [];
+  let audioCtx = null;
+  let soundInitialized = false;
+  let lastSeenNotifId = Number(sessionStorage.getItem('rp_last_notif_id') || 0);
+
+  function isSoundMuted() {
+    return localStorage.getItem('rp_admin_sound_muted') === '1';
+  }
+
+  function unlockAudio() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch {
+      // Ignore if browser blocks audio
+    }
+  }
+
+  function playNotificationChime() {
+    if (isSoundMuted()) return;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      if (audioCtx.state !== 'running') return;
+
+      const now = audioCtx.currentTime;
+      const notes = [880, 1174.66]; // A5 -> D6 clean chime
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.12);
+        gain.gain.setValueAtTime(0.001, now + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.14, now + i * 0.12 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.28);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.12);
+        osc.stop(now + i * 0.12 + 0.3);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  function soundIcon(muted) {
+    if (muted) {
+      return '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>';
+    }
+    return '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>';
+  }
 
   const NAV_SECTIONS = [
     {
@@ -116,6 +172,9 @@ const AdminCommon = (() => {
       </div>
       <div class="admin-header-right">
         <span id="admin-env-badge" class="env-badge demo" style="display:none"></span>
+        <button class="notif-btn" id="sound-toggle-btn" aria-label="Toggle notification sound" title="Notification Sound">
+          ${soundIcon(isSoundMuted())}
+        </button>
         <div class="notif-wrapper" id="notif-wrapper">
           <button class="notif-btn" id="notif-toggle-btn" aria-label="Notifications" title="Notifications">
             ${Components.icon('bell')}
@@ -151,6 +210,33 @@ const AdminCommon = (() => {
 
     const logoutBtn = document.getElementById('admin-logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+    const soundBtn = document.getElementById('sound-toggle-btn');
+    if (soundBtn) {
+      const updateSoundBtn = () => {
+        const muted = isSoundMuted();
+        soundBtn.innerHTML = soundIcon(muted);
+        soundBtn.title = muted ? 'Notification Sound Muted (Click to Enable)' : 'Notification Sound On (Click to Mute)';
+      };
+      updateSoundBtn();
+      soundBtn.addEventListener('click', () => {
+        const nextMuted = !isSoundMuted();
+        localStorage.setItem('rp_admin_sound_muted', nextMuted ? '1' : '0');
+        updateSoundBtn();
+        if (!nextMuted) {
+          unlockAudio();
+          playNotificationChime();
+          UI.toast('Notification sound enabled', 'success');
+        } else {
+          UI.toast('Notification sound muted', 'info');
+        }
+      });
+    }
+
+    // Unlock Web Audio on first user interaction in admin panel
+    ['pointerdown', 'keydown'].forEach(evt => {
+      document.addEventListener(evt, unlockAudio, { once: true, passive: true });
+    });
 
     const notifBtn = document.getElementById('notif-toggle-btn');
     const notifDropdown = document.getElementById('notif-dropdown');
@@ -231,6 +317,23 @@ const AdminCommon = (() => {
       if (badge) {
         badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
         badge.classList.toggle('visible', unreadCount > 0);
+      }
+
+      const maxId = notifications.reduce((m, n) => Math.max(m, Number(n.id) || 0), 0);
+      if (!soundInitialized) {
+        soundInitialized = true;
+        if (maxId > lastSeenNotifId) {
+          lastSeenNotifId = maxId;
+          sessionStorage.setItem('rp_last_notif_id', String(lastSeenNotifId));
+        }
+      } else if (maxId > lastSeenNotifId) {
+        const newUnread = notifications.filter(n => (Number(n.id) || 0) > lastSeenNotifId && !n.is_read);
+        lastSeenNotifId = maxId;
+        sessionStorage.setItem('rp_last_notif_id', String(lastSeenNotifId));
+        if (newUnread.length > 0) {
+          playNotificationChime();
+          UI.toast(newUnread[0].title || 'New booking / notification arrived', 'info', 5000);
+        }
       }
 
       renderNotificationsList();
