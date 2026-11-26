@@ -159,6 +159,9 @@ const Components = (() => {
         <div class="footer-bottom">
           <span>&copy; ${new Date().getFullYear()} Ranchi Pathology. All rights reserved.</span>
           <span>
+            Made by <a href="https://wa.me/916204522977" target="_blank" rel="noopener noreferrer" style="color:var(--cyan);font-weight:700;text-decoration:underline;">Sanu Kumar</a>
+          </span>
+          <span>
             <a href="/privacy.html" style="color:inherit;margin-right:1rem">Privacy</a>
             <a href="/terms.html" style="color:inherit">Terms</a>
           </span>
